@@ -105,7 +105,7 @@ public class TaskTest {
         // We must flatten the nested task(schedule the nested task) before we use the Integer.
         @Override
         public Task<Integer> apply(final Integer value) {
-            // Fan out 2 tasks.
+            // Spawn 2 tasks.
             final Task<Integer> task2 = Task.from(new Func0<Integer>() {
                 @Override
                 public Integer apply() {
