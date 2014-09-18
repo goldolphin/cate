@@ -35,6 +35,20 @@
                 <version>2.3</version>
                 <executions>
                     <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
                         <goals>
                             <goal>jar</goal>
                         </goals>
@@ -42,35 +56,89 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>com.github.github</groupId>
-                <artifactId>site-maven-plugin</artifactId>
-                <version>0.10-SNAPSHOT</version>
-                <configuration>
-                    <message>Maven artifacts for ${project.version}</message>  <!-- git commit message -->
-                    <noJekyll>true</noJekyll>                                  <!-- disable webpage processing -->
-                    <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory> <!-- matches distribution management repository url above -->
-                    <branch>refs/heads/mvn-repo</branch>                       <!-- remote branch name -->
-                    <includes><include>**/*</include></includes>
-                    <repositoryName>cate</repositoryName>      <!-- github repo name -->
-                    <repositoryOwner>goldolphin</repositoryOwner>    <!-- github username  -->
-                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
                 <executions>
-                    <!-- run site-maven-plugin's 'site' target as part of the build's normal 'deploy' phase -->
                     <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
                         <goals>
-                            <goal>site</goal>
+                            <goal>sign</goal>
                         </goals>
-                        <phase>deploy</phase>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
-    <distributionManagement>
-        <repository>
-            <id>internal.repo</id>
-            <name>Temporary Staging Repository</name>
-            <url>file://${project.build.directory}/mvn-repo</url>
-        </repository>
-    </distributionManagement>
+    <profiles>
+        <profile>
+            <id>sonatype</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+                <repository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+            </distributionManagement>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.4</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>github</id>
+            <distributionManagement>
+                <repository>
+                    <id>internal.repo</id>
+                    <name>Temporary Staging Repository</name>
+                    <url>file://${project.build.directory}/mvn-repo</url>
+                </repository>
+            </distributionManagement>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.github</groupId>
+                        <artifactId>site-maven-plugin</artifactId>
+                        <version>0.10-SNAPSHOT</version>
+                        <configuration>
+                            <message>Maven artifacts for ${project.version}</message>  <!-- git commit message -->
+                            <noJekyll>true</noJekyll>                                  <!-- disable webpage processing -->
+                            <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory> <!-- matches distribution management repository url above -->
+                            <branch>refs/heads/mvn-repo</branch>                       <!-- remote branch name -->
+                            <includes><include>**/*</include></includes>
+                            <repositoryName>cate</repositoryName>      <!-- github repo name -->
+                            <repositoryOwner>goldolphin</repositoryOwner>    <!-- github username  -->
+                        </configuration>
+                        <executions>
+                            <!-- run site-maven-plugin's 'site' target as part of the build's normal 'deploy' phase -->
+                            <execution>
+                                <goals>
+                                    <goal>site</goal>
+                                </goals>
+                                <phase>deploy</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
