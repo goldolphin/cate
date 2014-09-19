@@ -4,6 +4,32 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <name>Cate</name>
+    <description>Cate represents Continuation based Asynchronous Task Executor. It provides some abstraction for parallel task scheduling to let you write asynchronous programming codes in a synchronous-like style.</description>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/goldolphin/cate</url>
+        <connection>scm:git:git://github.com/goldolphin/cate.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/goldolphin/cate.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>goldolphin</id>
+            <name>Goldolphin Cao</name>
+            <email>goldolphin@gmail.com</email>
+            <url>http://www.goldolphin.net/</url>
+        </developer>
+    </developers>
+
     <groupId>net.goldolphin</groupId>
     <artifactId>cate</artifactId>
     <version>0.1</version>
