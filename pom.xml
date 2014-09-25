@@ -30,7 +30,7 @@
 
     <groupId>net.goldolphin</groupId>
     <artifactId>cate</artifactId>
-    <version>0.1.1-SNAPSHOT</version>
+    <version>0.1.1</version>
     <url>https://github.com/goldolphin/cate</url>
 
     <properties>
@@ -70,6 +70,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>2.9.1</version>
+                <configuration>
+                    <failOnError>false</failOnError>
+                </configuration>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
