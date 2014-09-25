@@ -33,9 +33,4 @@ public abstract class CollectTask<TResult> extends Task<TResult> {
      * @return
      */
     protected abstract IContinuation newContinuation(IContinuation cont);
-
-    @Override
-    public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
-        throw new UnsupportedOperationException();
-    }
 }

@@ -13,7 +13,12 @@ public class WhenAllTask extends CollectTask<Object[]> {
 
     @Override
     protected IContinuation newContinuation(IContinuation cont) {
-        return new Continuation(cont, this);
+        return new net.goldolphin.cate.Continuation(new Continuation(cont, this), this);
+    }
+
+    @Override
+    public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
+        cont.apply(state, previous, scheduler);
     }
 
     public static class Continuation implements IContinuation {
