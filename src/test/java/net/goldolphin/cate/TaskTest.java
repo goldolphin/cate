@@ -11,7 +11,7 @@ public class TaskTest {
         // The Waiter, which can be considered as a traditional java future, is a friendly utility for testing.
         // Don't use it in a pure async program, for it may block the execution.
         Waiter<Integer> waiter1 = testAsync(1).continueWithWaiter();
-        waiter1.execute(new SynchronizedScheduler());
+        waiter1.execute(new DebugScheduler());
         System.out.println(waiter1.getResult());
 
         // Executed in a thread pool.
@@ -42,14 +42,14 @@ public class TaskTest {
      * @return
      */
     public static ITask<Integer> addAsync(int a, int b) {
-        return addAsyncTask.initWithState(new int[]{a, b});
+        return addAsyncTask.withInitState(new int[]{a, b});
     }
 
     /**
      * This task is stateless, so we can build the task once and always reuse it.
      * Most primitive tasks are stateless, but {@link Waiter} is stateful.
      */
-    private static final Task<Integer> addAsyncTask = Task.from(new Action1<Context<int[], Integer>>() {
+    private static final Task<Integer> addAsyncTask = Task.create(new Action1<Context<int[], Integer>>() {
         @Override
         public void apply(final Context<int[], Integer> context) {
             int a = context.getState()[0];
@@ -69,11 +69,11 @@ public class TaskTest {
      * @return
      */
     public Task<Integer> testAsync(int value) {
-        return testAsyncTask.initWithState(value);
+        return testAsyncTask.withInitState(value);
     }
 
     // This task is also stateless, so we can build the task once and always reuse it.
-    private static final Task<Integer> testAsyncTask = Task.from(new Func1<Integer, Integer>() {
+    private static final Task<Integer> testAsyncTask = Task.create(new Func1<Integer, Integer>() {
         // Create a task from a normal function.
         @Override
         public Integer apply(Integer value) {
@@ -106,14 +106,14 @@ public class TaskTest {
         @Override
         public Task<Integer> apply(final Integer value) {
             // Spawn 2 tasks.
-            final Task<Integer> task2 = Task.from(new Func0<Integer>() {
+            final Task<Integer> task2 = Task.create(new Func0<Integer>() {
                 @Override
                 public Integer apply() {
                     return value * 2;
                 }
             });
 
-            final Task<Integer> task3 = Task.from(new Func0<Integer>() {
+            final Task<Integer> task3 = Task.create(new Func0<Integer>() {
                 @Override
                 public Integer apply() {
                     return value * 3;
@@ -134,4 +134,13 @@ public class TaskTest {
             return value * 2;
         }
     });
+
+    public static class DebugScheduler extends SynchronizedScheduler {
+        @Override
+        public void schedule(ITask<?> task, Object state, IContinuation cont, ITask<?> previous) {
+            System.out.format("Run: task=%s, state=%s, cont=%s, previous=%s, scheduler=%s\n",
+                    task, state, cont, previous, this);
+            super.schedule(task, state, cont, previous);
+        }
+    }
 }

@@ -34,6 +34,14 @@ public class Context<AResult, TResult> {
     }
 
     /**
+     * Get current scheduler.
+     * @return
+     */
+    public IScheduler getScheduler() {
+        return scheduler;
+    }
+
+    /**
      * Resume the control flow with specified new state.
      * @param newState
      */

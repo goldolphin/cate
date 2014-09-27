@@ -68,7 +68,8 @@ public abstract class Task<TResult> implements ITask<TResult> {
     }
 
     /**
-     * After this task completes, continue to execute a waiter.
+     * After this task completes, continue to execute a waiter.<br />
+     * Beware, a waiter contains mutable status.
      * @return
      */
     public Waiter<TResult> continueWithWaiter() {
@@ -76,23 +77,32 @@ public abstract class Task<TResult> implements ITask<TResult> {
     }
 
     /**
-     * Create a task to pass the specified initState to this task.
+     * Wrap this task with specified init state.
      * @param initState
      * @param <T>
      * @return
      */
-    public <T> Task<TResult> initWithState(T initState) {
-        return new InitTask<T, TResult>(initState, this);
+    public <T> Task<TResult> withInitState(T initState) {
+        return new TaskWithInitState<T, TResult>(initState, this);
     }
 
     /**
-     * Create a task to pass the specified initState to this task.
+     * Wrap this task with specified init state.
      * @param initState
      * @param <T>
      * @return
      */
-    public <T> Task<TResult> initWithState(T ... initState) {
-        return new InitTask<T[], TResult>(initState, this);
+    public <T> Task<TResult> withInitState(T ... initState) {
+        return new TaskWithInitState<T[], TResult>(initState, this);
+    }
+
+    /**
+     * Wrap this task with specified scheduler.
+     * @param scheduler
+     * @return
+     */
+    public Task<TResult> withScheduler(IScheduler scheduler) {
+        return new TaskWithScheduler<TResult>(this, scheduler);
     }
 
     /**
@@ -101,7 +111,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param <TResult>
      * @return
      */
-    public static <TResult> Task<TResult> from(Func0<TResult> func) {
+    public static <TResult> Task<TResult> create(Func0<TResult> func) {
         return new Func0Task<TResult>(func);
     }
 
@@ -111,7 +121,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param <TResult>
      * @return
      */
-    public static <T, TResult> Task<TResult> from(Func1<T, TResult> func) {
+    public static <T, TResult> Task<TResult> create(Func1<T, TResult> func) {
         return new Func1Task<T, TResult>(func);
     }
 
@@ -122,7 +132,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param <TResult>
      * @return
      */
-    public static <T, TResult> Task<TResult> from(Action1<Context<T, TResult>> action) {
+    public static <T, TResult> Task<TResult> create(Action1<Context<T, TResult>> action) {
         return new ContextTask<T, TResult>(action);
     }
 
@@ -136,7 +146,8 @@ public abstract class Task<TResult> implements ITask<TResult> {
     }
 
     /**
-     * Create a task which will complete when all specified tasks complete.
+     * Create a task which will complete when all specified tasks complete.<br />
+     * Beware, {@link Context} of this task contains mutable status.
      * @param tasks
      * @return
      */
@@ -146,6 +157,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
 
     /**
      * Create a task which will complete when any specified task complete.
+     * Beware, {@link Context} of this task contains mutable status.
      * @param tasks
      * @return
      */
