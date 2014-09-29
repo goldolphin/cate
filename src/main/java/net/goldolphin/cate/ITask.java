@@ -16,7 +16,7 @@ public interface ITask<TResult> {
     public void execute(Object state, IContinuation cont, IScheduler scheduler);
 
     /**
-     * Action when the task is executed. Continuation should be applied usually.
+     * Action should be done when the task is executed. Continuation should be applied usually.
      * @param state
      * @param cont
      * @param previous
