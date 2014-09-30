@@ -121,7 +121,7 @@ public class TaskTest {
             });
 
             // Collect results of the 2 task2
-            return Task.continueWhenAll(task2, task3).continueWith(new Func1<Object[], Integer>() {
+            return Task.whenAll(task2, task3).continueWith(new Func1<Object[], Integer>() {
                 @Override
                 public Integer apply(Object[] value) {
                     return (Integer) value[0] + (Integer) value[1];

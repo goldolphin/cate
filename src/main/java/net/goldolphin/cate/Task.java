@@ -141,7 +141,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param tasks
      * @return
      */
-    public static <TResult> CollectTask<TResult> continueWhen(Action1<Context<?, TResult>> action, ITask<?>... tasks) {
+    public static <TResult> CollectTask<TResult> when(Action1<Context<?, TResult>> action, ITask<?>... tasks) {
         return new ContextCollectTask<TResult>(action, tasks);
     }
 
@@ -151,7 +151,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param tasks
      * @return
      */
-    public static WhenAllTask continueWhenAll(ITask<?>... tasks) {
+    public static WhenAllTask whenAll(ITask<?>... tasks) {
         return new WhenAllTask(tasks);
     }
 
@@ -161,7 +161,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param tasks
      * @return
      */
-    public static WhenAnyTask continueWhenAny(ITask<?>... tasks) {
+    public static WhenAnyTask whenAny(ITask<?>... tasks) {
         return new WhenAnyTask(tasks);
     }
 

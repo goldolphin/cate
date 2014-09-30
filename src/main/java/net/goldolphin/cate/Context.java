@@ -2,11 +2,11 @@ package net.goldolphin.cate;
 
 /**
  * Context of current control flow.
- * @param <AResult>
+ * @param <TInput>
  * @param <TResult>
  */
-public class Context<AResult, TResult> {
-    private final AResult state;
+public class Context<TInput, TResult> {
+    private final TInput state;
     private final IContinuation cont;
     private final ITask<?> previous;
     private final IScheduler scheduler;
@@ -18,7 +18,7 @@ public class Context<AResult, TResult> {
      * @param previous
      * @param scheduler
      */
-    Context(AResult state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
+    Context(TInput state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
         this.previous = previous;
         this.state = state;
         this.cont = cont;
@@ -29,7 +29,7 @@ public class Context<AResult, TResult> {
      * Get current state.
      * @return
      */
-    public AResult getState() {
+    public TInput getState() {
         return state;
     }
 
