@@ -30,7 +30,7 @@
 
     <groupId>net.goldolphin</groupId>
     <artifactId>cate</artifactId>
-    <version>0.1.4</version>
+    <version>0.1.5-SNAPSHOT</version>
     <url>https://github.com/goldolphin/cate</url>
 
     <properties>
