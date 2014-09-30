@@ -11,10 +11,10 @@ a synchronous-like style.
 4. Most primitive tasks are stateless, which means combined tasks can be reused in most of the situations.
 5. Cate is very easily extended. The whole library is based on 3 basic interface: ITask, IContinuation & IScheduler.
    The former 2 interfaces are implemented to build customized control flows. The latter one can be implemented to
-   encapsulation arbitrary thread pool.
+   encapsulate arbitrary thread pool.
 
 ## Examples
-Here is an code example with detailed comments, that describes the main features:
+Here is an code example with detailed comments, which describes the main features:
 
 [src/test/java/net/goldolphin/cate/TaskTest.java](src/test/java/net/goldolphin/cate/TaskTest.java)
 
