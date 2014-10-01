@@ -6,9 +6,9 @@ package net.goldolphin.cate;
  *         2014-09-13 15:43
  */
 public class ContextCollectTask<TResult> extends CollectTask<TResult> {
-    private final Action1<Context<?, TResult>> action;
+    private final ContextAction<Object, TResult> action;
 
-    public ContextCollectTask(Action1<Context<?, TResult>> action, ITask<?> ... tasks) {
+    public ContextCollectTask(ContextAction<Object, TResult> action, ITask<?> ... tasks) {
         super(tasks);
         this.action = action;
     }
@@ -20,7 +20,7 @@ public class ContextCollectTask<TResult> extends CollectTask<TResult> {
 
     @Override
     public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
-        Context<?, TResult> context = new Context<Object, TResult>(state, cont, previous, scheduler);
+        Context<Object, TResult> context = new Context<Object, TResult>(state, cont, previous, scheduler);
         action.apply(context);
     }
 }

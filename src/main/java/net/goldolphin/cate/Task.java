@@ -25,6 +25,25 @@ public abstract class Task<TResult> implements ITask<TResult> {
     }
 
     /**
+     * After this task completes, continue to execute the specified action.
+     * @param action
+     * @return
+     */
+    public Task<Unit> continueWith(Action1<TResult> action) {
+        return new Action1SeqTask<TResult, TResult>(this, action, false);
+    }
+
+    /**
+     * After this task completes, flatten the result recursively and continue to execute the specified action.
+     * @param action
+     * @param <T>
+     * @return
+     */
+    public <T> Task<Unit> flattenAndContinueWith(Action1<T> action) {
+        return new Action1SeqTask<T, TResult>(this, action, true);
+    }
+
+    /**
      * After this task completes, continue to execute the specified function.
      * @param func
      * @param <SResult>
@@ -52,7 +71,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param <SResult>
      * @return
      */
-    public <SResult> Task<SResult> continueWith(Action1<Context<TResult, SResult>> action) {
+    public <SResult> Task<SResult> continueWith(ContextAction<TResult, SResult> action) {
         return new ContextSeqTask<TResult, SResult>(this, action, false);
     }
 
@@ -63,7 +82,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param <SResult>
      * @return
      */
-    public <SResult> Task<SResult> flattenAndContinueWith(Action1<Context<TResult, SResult>> action) {
+    public <SResult> Task<SResult> flattenAndContinueWith(ContextAction<TResult, SResult> action) {
         return new ContextSeqTask<TResult, SResult>(this, action, true);
     }
 
@@ -118,6 +137,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
     /**
      * Create a task from a function.
      * @param func
+     * @param <T>
      * @param <TResult>
      * @return
      */
@@ -126,13 +146,32 @@ public abstract class Task<TResult> implements ITask<TResult> {
     }
 
     /**
-     * Create a task from an action.
+     * Create a task from a action.
+     * @param action
+     * @return
+     */
+    public static Task<Unit> create(Action0 action) {
+        return new Action0Task(action);
+    }
+
+    /**
+     * Create a task from a action.
+     * @param action
+     * @param <T>
+     * @return
+     */
+    public static <T> Task<Unit> create(Action1<T> action) {
+        return new Action1Task<T>(action);
+    }
+
+    /**
+     * Create a task from an {@link ContextAction}.
      * {@link Context#resume} must be invoked to resume the control flow.
      * @param action
      * @param <TResult>
      * @return
      */
-    public static <T, TResult> Task<TResult> create(Action1<Context<T, TResult>> action) {
+    public static <T, TResult> Task<TResult> create(ContextAction<T, TResult> action) {
         return new ContextTask<T, TResult>(action);
     }
 
@@ -141,7 +180,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param tasks
      * @return
      */
-    public static <TResult> CollectTask<TResult> when(Action1<Context<?, TResult>> action, ITask<?>... tasks) {
+    public static <TResult> CollectTask<TResult> when(ContextAction<Object, TResult> action, ITask<?>... tasks) {
         return new ContextCollectTask<TResult>(action, tasks);
     }
 

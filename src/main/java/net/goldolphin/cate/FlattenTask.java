@@ -24,7 +24,7 @@ public class FlattenTask<TResult, TTask extends ITask<TResult>> extends SeqTask<
         private final IContinuation next;
 
         public Continuation(IContinuation next, ITask<?> task) {
-            this.next = new net.goldolphin.cate.Continuation(next, task);
+            this.next = new SeqTask.Continuation(next, task);
         }
 
         @Override

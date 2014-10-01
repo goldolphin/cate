@@ -5,9 +5,9 @@ package net.goldolphin.cate;
  *         2014-09-08 21:47
  */
 public class ContextTask<T, TResult> extends Task<TResult> {
-    private final Action1<Context<T, TResult>> action;
+    private final ContextAction<T, TResult> action;
 
-    public ContextTask(Action1<Context<T, TResult>> action) {
+    public ContextTask(ContextAction<T, TResult> action) {
         this.action = action;
     }
 

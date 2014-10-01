@@ -31,6 +31,21 @@ public abstract class SeqTask<AResult, TResult> extends Task<TResult> {
      */
     protected abstract TResult evaluate(Object value);
 
+    public static class Continuation implements IContinuation {
+        protected final IContinuation next;
+        protected final ITask<?> task;
+
+        public Continuation(IContinuation next, ITask<?> task) {
+            this.next = next;
+            this.task = task;
+        }
+
+        @Override
+        public void apply(Object state, ITask<?> previous, IScheduler scheduler) {
+            task.onExecute(state, next, previous, scheduler);
+        }
+    }
+
     public static class FlattenContinuation extends Continuation {
         public FlattenContinuation(IContinuation next, ITask<?> task) {
             super(next, task);

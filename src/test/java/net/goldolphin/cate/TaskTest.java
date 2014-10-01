@@ -49,7 +49,7 @@ public class TaskTest {
      * This task is stateless, so we can build the task once and always reuse it.
      * Most primitive tasks are stateless, but {@link Waiter} is stateful.
      */
-    private static final Task<Integer> addAsyncTask = Task.create(new Action1<Context<int[], Integer>>() {
+    private static final Task<Integer> addAsyncTask = Task.create(new ContextAction<int[], Integer>() {
         @Override
         public void apply(final Context<int[], Integer> context) {
             int a = context.getState()[0];
@@ -79,7 +79,7 @@ public class TaskTest {
         public Integer apply(Integer value) {
             return value;
         }
-    }).continueWith(new Action1<Context<Integer, Integer>>() {
+    }).continueWith(new ContextAction<Integer, Integer>() {
         // Serialize tasks.
         @Override
         public void apply(final Context<Integer, Integer> context) {

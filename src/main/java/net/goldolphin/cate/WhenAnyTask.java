@@ -13,7 +13,7 @@ public class WhenAnyTask extends CollectTask<WhenAnyTask.Result> {
 
     @Override
     protected IContinuation newContinuation(IContinuation cont) {
-        return new net.goldolphin.cate.Continuation(new Continuation(cont, this), this);
+        return super.newContinuation(new Continuation(cont, this));
     }
 
     @Override

@@ -14,6 +14,7 @@ public abstract class CollectTask<TResult> extends Task<TResult> {
 
     /**
      * Get tasks to wait.
+     *
      * @return
      */
     public ITask<?>[] getTasks() {
@@ -23,14 +24,32 @@ public abstract class CollectTask<TResult> extends Task<TResult> {
     @Override
     public void execute(Object state, IContinuation cont, IScheduler scheduler) {
         IContinuation newCont = newContinuation(cont);
-        for (ITask<?> task: tasks) {
+        for (ITask<?> task : tasks) {
             task.execute(state, newCont, scheduler);
         }
     }
 
     /**
      * Build a new continuation.
+     *
      * @return
      */
-    protected abstract IContinuation newContinuation(IContinuation cont);
+    protected IContinuation newContinuation(IContinuation cont) {
+        return new Continuation(cont, this);
+    }
+
+    public static class Continuation implements IContinuation {
+        protected final IContinuation next;
+        protected final ITask<?> task;
+
+        public Continuation(IContinuation next, ITask<?> task) {
+            this.next = next;
+            this.task = task;
+        }
+
+        @Override
+        public void apply(Object state, ITask<?> previous, IScheduler scheduler) {
+            scheduler.schedule(task, state, next, previous);
+        }
+    }
 }

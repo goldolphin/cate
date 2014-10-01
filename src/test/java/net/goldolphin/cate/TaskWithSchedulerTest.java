@@ -5,7 +5,7 @@ import org.junit.Test;
 
 public class TaskWithSchedulerTest {
     @Test
-    public void testWithScheduler() throws Exception {
+    public void testTaskWithScheduler() throws Exception {
         Waiter<IScheduler> waiter1 = fooAsync().continueWithWaiter();
         waiter1.execute(scheduler1);
         Assert.assertEquals(scheduler1, waiter1.getResult());
@@ -19,7 +19,7 @@ public class TaskWithSchedulerTest {
     private IScheduler scheduler2 = new SynchronizedScheduler();
 
     Task<IScheduler> fooAsync() {
-        return Task.create(new Action1<Context<Object, IScheduler>>() {
+        return Task.create(new ContextAction<Object, IScheduler>() {
             @Override
             public void apply(Context<Object, IScheduler> context) {
                 context.resume(context.getScheduler());

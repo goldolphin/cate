@@ -55,5 +55,5 @@ public class Context<TInput, TResult> {
      */
     public void resume(TResult newState, IScheduler scheduler) {
         cont.apply(newState, previous, scheduler);
-    };
+    }
 }

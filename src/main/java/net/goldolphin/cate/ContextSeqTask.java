@@ -5,9 +5,9 @@ package net.goldolphin.cate;
  *         2014-09-11 10:27
  */
 public class ContextSeqTask<AResult, TResult> extends SeqTask<AResult, TResult> {
-    private final Action1<Context<AResult, TResult>> action;
+    private final ContextAction<AResult, TResult> action;
 
-    public ContextSeqTask(ITask<AResult> antecedent, Action1<Context<AResult, TResult>> action, boolean flatten) {
+    public ContextSeqTask(ITask<AResult> antecedent, ContextAction<AResult, TResult> action, boolean flatten) {
         super(antecedent, flatten);
         this.action = action;
     }
