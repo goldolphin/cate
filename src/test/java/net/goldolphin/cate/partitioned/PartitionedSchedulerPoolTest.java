@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import java.util.Map;
 
-public class PartitionedSchedulerTest {
+public class PartitionedSchedulerPoolTest {
     @Test
     public void testScheduler() throws Exception {
         int partitionNum = 10;
@@ -19,8 +19,9 @@ public class PartitionedSchedulerTest {
         for (int i = 0; i < partitionNum; i ++) {
             schedulers[i] = new SynchronizedScheduler();
         }
-        PartitionedScheduler scheduler = new PartitionedScheduler(schedulers, new IdentityKeyExtractor(), new HashedPartitioner());
-        final PartitionedStore<Integer, IScheduler> store = new PartitionedStore<Integer, IScheduler>(scheduler);
+        PartitionedSchedulerPool<Integer> schedulerPool
+                = new PartitionedSchedulerPool<Integer>(schedulers, HashedPartitioner.<Integer>instance());
+        final PartitionedStore<Integer, IScheduler> store = new PartitionedStore<Integer, IScheduler>(schedulerPool);
         Task<Boolean> task = Task.create(new ContextAction<Integer, Boolean>() {
             @Override
             public void apply(Context<Integer, Boolean> context) {
@@ -38,13 +39,13 @@ public class PartitionedSchedulerTest {
 
         for (int i = 0; i < 100; i ++) {
             Waiter<Boolean> waiter = task.continueWithWaiter();
-            waiter.execute(i, scheduler);
+            schedulerPool.execute(i, waiter, i);
             Assert.assertTrue(waiter.getResult());
         }
 
         for (int i = 0; i < 10; i ++) {
             Waiter<Boolean> waiter = task.continueWithWaiter();
-            waiter.execute(i, scheduler);
+            schedulerPool.execute(i, waiter, i);
             Assert.assertTrue(waiter.getResult());
         }
 

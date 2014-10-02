@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A partitioned data store, which can be used with a {@link PartitionedScheduler} to avoid locks on data read/write.
+ * A partitioned data store, which can be used with a {@link PartitionedSchedulerPool} to avoid locks on data read/write.
  * @param <K> key type.
  * @param <V> value type.
  * @author goldolphin
@@ -17,11 +17,11 @@ public class PartitionedStore<K, V> implements IStore<K, V> {
     private final IPartitioner partitioner;
 
     /**
-     * Construct a store using the same partitioning configuration as the specified {@link PartitionedScheduler}
-     * @param scheduler
+     * Construct a store using the same partitioning configuration as the specified {@link PartitionedSchedulerPool}
+     * @param schedulerPool
      */
-    public PartitionedStore(PartitionedScheduler scheduler) {
-        this(scheduler.getPartitionNum(), scheduler.getPartitioner());
+    public PartitionedStore(PartitionedSchedulerPool schedulerPool) {
+        this(schedulerPool.getPartitionNum(), schedulerPool.getPartitioner());
     }
 
     /**

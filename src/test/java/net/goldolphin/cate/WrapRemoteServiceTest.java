@@ -1,8 +1,7 @@
 package net.goldolphin.cate;
 
 import net.goldolphin.cate.partitioned.HashedPartitioner;
-import net.goldolphin.cate.partitioned.IdentityKeyExtractor;
-import net.goldolphin.cate.partitioned.PartitionedScheduler;
+import net.goldolphin.cate.partitioned.PartitionedSchedulerPool;
 import net.goldolphin.cate.partitioned.PartitionedStore;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,9 +28,10 @@ public class WrapRemoteServiceTest {
             // We use multiple threads here.
             schedulers[i] = new ExecutorScheduler(Executors.newSingleThreadExecutor());
         }
-        final PartitionedScheduler scheduler = new PartitionedScheduler(schedulers, new IdentityKeyExtractor(), new HashedPartitioner());
+        final PartitionedSchedulerPool<String> schedulerPool
+                = new PartitionedSchedulerPool<String>(schedulers, HashedPartitioner.<String>instance());
         PartitionedStore<String, Context<Unit, Boolean>> store
-                = new PartitionedStore<String, Context<Unit, Boolean>>(scheduler);
+                = new PartitionedStore<String, Context<Unit, Boolean>>(schedulerPool);
 
         // Initialize the service.
         Service<String, Integer, Boolean> evenChecker = new Service<String, Integer, Boolean>(new Func1<Integer, Boolean>() {
@@ -49,7 +49,7 @@ public class WrapRemoteServiceTest {
             evenChecker.start(new Service.Handler<String, Boolean>() {
                 @Override
                 public void onReceive(String key, Boolean result) {
-                    client.onReceive(key, result, scheduler);
+                    schedulerPool.execute(key, client.onReceive(key, result));
                 }
             });
 
@@ -58,7 +58,7 @@ public class WrapRemoteServiceTest {
             for (int i = 0; i < waiters.length; i ++) {
                 String key = Long.toHexString(random.nextLong());
                 Waiter<Boolean> waiter = client.call(key, i).continueWithWaiter();
-                waiter.execute(scheduler);
+                schedulerPool.execute(key, waiter);
                 waiters[i] = waiter;
             }
             for (int i = 0; i < waiters.length; i ++) {
@@ -157,8 +157,8 @@ public class WrapRemoteServiceTest {
             });
         }
 
-        public void onReceive(final K key, final V2 result, IScheduler scheduler) {
-            Task.create(new Action0() {
+        public Task<Unit> onReceive(final K key, final V2 result) {
+            return Task.create(new Action0() {
                 @Override
                 public void apply() {
                     Context<Unit, V2> context = store.remove(key);
@@ -166,7 +166,7 @@ public class WrapRemoteServiceTest {
                         context.resume(result);
                     }
                 }
-            }).execute(scheduler);
+            });
         }
     }
 }
