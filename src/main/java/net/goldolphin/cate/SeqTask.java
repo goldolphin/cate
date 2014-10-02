@@ -56,7 +56,7 @@ public abstract class SeqTask<AResult, TResult> extends Task<TResult> {
             if (state instanceof ITask<?>) {
                 ((ITask<?>) state).execute(null, this, scheduler);
             } else {
-                scheduler.schedule(task, state, next, previous);
+                super.apply(state, previous, scheduler);
             }
         }
     }
