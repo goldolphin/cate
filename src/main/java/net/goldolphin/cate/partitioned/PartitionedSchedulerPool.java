@@ -1,8 +1,6 @@
 package net.goldolphin.cate.partitioned;
 
-import net.goldolphin.cate.IContinuation;
 import net.goldolphin.cate.IScheduler;
-import net.goldolphin.cate.Task;
 
 /**
  * A scheduler pool which schedule tasks using a partitioning algorithm.
@@ -25,35 +23,12 @@ public class PartitionedSchedulerPool<K> {
     }
 
     /**
-     * Execute a task.
+     * Returns a scheduler for a specified key.
      * @param key
-     * @param task
+     * @return
      */
-    public void execute(K key, Task<?> task) {
-        IScheduler scheduler = schedulers[partitioner.partition(key, schedulers.length)];
-        task.execute(scheduler);
-    }
-
-    /**
-     * Execute a task with init state.
-     * @param key
-     * @param task
-     * @param state
-     */
-    public void execute(K key, Task<?> task, Object state) {
-        IScheduler scheduler = schedulers[partitioner.partition(key, schedulers.length)];
-        task.execute(state, scheduler);
-    }
-
-    /**
-     * Execute a task with init state & continuation.
-     * @param key
-     * @param task
-     * @param state
-     */
-    public void execute(K key, Task<?> task, Object state, IContinuation cont) {
-        IScheduler scheduler = schedulers[partitioner.partition(key, schedulers.length)];
-        task.execute(state, cont, scheduler);
+    public IScheduler getScheduler(K key) {
+        return schedulers[partitioner.partition(key, schedulers.length)];
     }
 
     /**

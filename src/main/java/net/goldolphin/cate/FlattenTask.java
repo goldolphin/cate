@@ -4,32 +4,33 @@ package net.goldolphin.cate;
  * @author goldolphin
  *         2014-09-08 12:03
  */
-public class FlattenTask<TResult, TTask extends ITask<TResult>> extends SeqTask<TTask, TResult> {
+public class FlattenTask<TResult, TTask extends ITask<TResult>> extends Task<TResult> {
+    private final ITask<TTask> task;
 
-    public FlattenTask(ITask<TTask> antecedent) {
-        super(antecedent, true);
+    public FlattenTask(ITask<TTask> task) {
+        this.task = task;
     }
 
     @Override
-    public void execute(Object state, IContinuation cont, IScheduler scheduler) {
-        antecedent.execute(state, new Continuation(cont, this), scheduler);
+    public IContinuation buildContinuation(IContinuation cont) {
+        return task.buildContinuation(new Continuation(cont));
     }
 
     @Override
-    protected TResult evaluate(Object value) {
-        return (TResult) value;
+    public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
+        throw new UnsupportedOperationException();
     }
 
     public static class Continuation implements IContinuation {
         private final IContinuation next;
 
-        public Continuation(IContinuation next, ITask<?> task) {
-            this.next = new SeqTask.Continuation(next, task);
+        public Continuation(IContinuation next) {
+            this.next = next;
         }
 
         @Override
         public void apply(Object state, ITask<?> previous, IScheduler scheduler) {
-            ((ITask<?>) state).execute(null, next, scheduler);
+            ((ITask<?>) state).buildContinuation(next).apply(null, null, scheduler);
         }
     }
 }

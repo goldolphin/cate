@@ -6,13 +6,14 @@ package net.goldolphin.cate;
  * @author goldolphin
  *         2014-09-06 18:05
  */
-public class Waiter<TResult> extends SeqTask<TResult, TResult> {
+public class Waiter<TResult> extends Task<TResult> {
+    private final ITask<TResult> task;
     private final Object lock = new Object();
     private volatile boolean isComplete = false;
     private volatile TResult result;
 
-    public Waiter(ITask<TResult> antecedent) {
-        super(antecedent, false);
+    public Waiter(ITask<TResult> task) {
+        this.task = task;
     }
 
     /**
@@ -21,6 +22,21 @@ public class Waiter<TResult> extends SeqTask<TResult, TResult> {
      */
     public boolean isComplete() {
         return isComplete;
+    }
+
+    /**
+     * Set the result of this task.
+     * @param result
+     */
+    public void setResult(TResult result) {
+        synchronized (lock) {
+            if (isComplete) {
+                throw new IllegalStateException("The task is already completed.");
+            }
+            this.result = result;
+            isComplete = true;
+            lock.notifyAll();
+        }
     }
 
     /**
@@ -41,17 +57,13 @@ public class Waiter<TResult> extends SeqTask<TResult, TResult> {
     }
 
     @Override
-    protected TResult evaluate(Object value) {
-        throw new UnsupportedOperationException();
+    public IContinuation buildContinuation(IContinuation cont) {
+        return task.buildContinuation(new Continuation(cont, this));
     }
 
     @Override
     public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler)  {
-        synchronized (lock) {
-            result = (TResult) state;
-            isComplete = true;
-            lock.notifyAll();
-        }
+        setResult((TResult) state);
         cont.apply(state, this, scheduler);
     }
 }

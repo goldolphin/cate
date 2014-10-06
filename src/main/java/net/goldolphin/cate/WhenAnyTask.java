@@ -12,13 +12,13 @@ public class WhenAnyTask extends CollectTask<WhenAnyTask.Result> {
     }
 
     @Override
-    protected IContinuation newContinuation(IContinuation cont) {
-        return super.newContinuation(new Continuation(cont, this));
+    protected IContinuation buildCollectorContinuation(IContinuation cont) {
+        return new Continuation(cont, this);
     }
 
     @Override
     public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
-        cont.apply(state, previous, scheduler);
+        throw new UnsupportedOperationException();
     }
 
     public static class Continuation implements IContinuation {

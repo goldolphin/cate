@@ -13,7 +13,7 @@ public abstract class CollectTask<TResult> extends Task<TResult> {
     }
 
     /**
-     * Get tasks to wait.
+     * Returns tasks to wait.
      *
      * @return
      */
@@ -22,34 +22,34 @@ public abstract class CollectTask<TResult> extends Task<TResult> {
     }
 
     @Override
-    public void execute(Object state, IContinuation cont, IScheduler scheduler) {
-        IContinuation newCont = newContinuation(cont);
-        for (ITask<?> task : tasks) {
-            task.execute(state, newCont, scheduler);
+    public IContinuation buildContinuation(IContinuation cont) {
+        IContinuation[] conts = new IContinuation[tasks.length];
+        IContinuation collectorCont = buildCollectorContinuation(cont);
+        for (int i = 0; i < tasks.length; i ++) {
+            conts[i] = tasks[i].buildContinuation(collectorCont);
         }
+        return new DispatcherContinuation(conts);
     }
 
     /**
-     * Build a new continuation.
+     * Builds a collector continuation.
      *
      * @return
      */
-    protected IContinuation newContinuation(IContinuation cont) {
-        return new Continuation(cont, this);
-    }
+    protected abstract IContinuation buildCollectorContinuation(IContinuation cont);
 
-    public static class Continuation implements IContinuation {
-        protected final IContinuation next;
-        protected final ITask<?> task;
+    public static class DispatcherContinuation implements IContinuation {
+        protected final IContinuation[] next;
 
-        public Continuation(IContinuation next, ITask<?> task) {
+        public DispatcherContinuation(IContinuation[] next) {
             this.next = next;
-            this.task = task;
         }
 
         @Override
         public void apply(Object state, ITask<?> previous, IScheduler scheduler) {
-            scheduler.schedule(task, state, next, previous);
+            for (IContinuation cont: next) {
+                cont.apply(state, previous, scheduler);
+            }
         }
     }
 }

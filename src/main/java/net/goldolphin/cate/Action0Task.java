@@ -12,13 +12,13 @@ public class Action0Task extends Task<Unit> {
     }
 
     @Override
-    public void execute(Object state, IContinuation cont, IScheduler scheduler) {
-        action.apply();
-        cont.apply(Unit.INSTANCE, this, scheduler);
+    public IContinuation buildContinuation(IContinuation cont) {
+        return new Continuation(cont, this);
     }
 
     @Override
     public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
-        scheduler.schedule(this, state, cont, null);
+        action.apply();
+        cont.apply(Unit.INSTANCE, this, scheduler);
     }
 }

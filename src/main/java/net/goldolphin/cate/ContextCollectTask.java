@@ -14,7 +14,7 @@ public class ContextCollectTask<TResult> extends CollectTask<TResult> {
     }
 
     @Override
-    protected IContinuation newContinuation(IContinuation cont) {
+    protected IContinuation buildCollectorContinuation(IContinuation cont) {
         return new Continuation(cont, this);
     }
 

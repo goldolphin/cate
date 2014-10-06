@@ -21,7 +21,36 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param scheduler
      */
     public void execute(Object state, IScheduler scheduler) {
-        execute(state, IContinuation.END_CONTINUATION, scheduler);
+        scheduler.schedule(state, buildContinuation(IContinuation.END_CONTINUATION), null);
+    }
+
+    /**
+     * After this task completes, continue to execute the specified task.
+     * @param task
+     * @param <SResult>
+     * @return
+     */
+    public <SResult> Task<SResult> continueWith(ITask<SResult> task) {
+        return new SeqTask<TResult, SResult>(this, task);
+    }
+
+    /**
+     * Flatten the result of the task.
+     * @param <NResult>
+     * @return
+     */
+    public <NResult> Task<NResult> flatten() {
+        return new FlattenTask<NResult, ITask<NResult>>((ITask<ITask<NResult>>) this);
+    }
+
+    /**
+     * After this task completes, flatten the result and continue to execute the specified task.
+     * @param task
+     * @param <SResult>
+     * @return
+     */
+    public <SResult> Task<SResult> flattenAndContinueWith(ITask<SResult> task) {
+        return this.flatten().continueWith(task);
     }
 
     /**
@@ -30,7 +59,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @return
      */
     public Task<Unit> continueWith(Action1<TResult> action) {
-        return new Action1SeqTask<TResult, TResult>(this, action, false);
+        return continueWith(create(action));
     }
 
     /**
@@ -40,7 +69,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @return
      */
     public <T> Task<Unit> flattenAndContinueWith(Action1<T> action) {
-        return new Action1SeqTask<T, TResult>(this, action, true);
+        return flattenAndContinueWith(create(action));
     }
 
     /**
@@ -50,18 +79,18 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @return
      */
     public <SResult> Task<SResult> continueWith(Func1<TResult, SResult> func) {
-        return new Func1SeqTask<TResult, TResult, SResult>(this, func, false);
+        return continueWith(create(func));
     }
 
     /**
-     * After this task completes, flatten the result recursively and continue to execute the specified function.
+     * After this task completes, flatten the result and continue to execute the specified function.
      * @param func
      * @param <T>
      * @param <SResult>
      * @return
      */
     public <T, SResult> Task<SResult> flattenAndContinueWith(Func1<T, SResult> func) {
-        return new Func1SeqTask<T, TResult, SResult>(this, func, true);
+        return flattenAndContinueWith(create(func));
     }
 
     /**
@@ -72,18 +101,18 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @return
      */
     public <SResult> Task<SResult> continueWith(ContextAction<TResult, SResult> action) {
-        return new ContextSeqTask<TResult, SResult>(this, action, false);
+        return continueWith(create(action));
     }
 
     /**
-     * After this task completes, flatten the result recursively and continue to execute the specified function.
+     * After this task completes, flatten the result and continue to execute the specified function.
      * {@link Context#resume} must be invoked to resume the control flow.
      * @param action
      * @param <SResult>
      * @return
      */
     public <SResult> Task<SResult> flattenAndContinueWith(ContextAction<TResult, SResult> action) {
-        return new ContextSeqTask<TResult, SResult>(this, action, true);
+        return flattenAndContinueWith(create(action));
     }
 
     /**
@@ -102,7 +131,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @return
      */
     public <T> Task<TResult> withInitState(T initState) {
-        return new TaskWithInitState<T, TResult>(initState, this);
+        return new TaskWithInitState<T, TResult>(this, initState);
     }
 
     /**
@@ -112,11 +141,11 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @return
      */
     public <T> Task<TResult> withInitState(T ... initState) {
-        return new TaskWithInitState<T[], TResult>(initState, this);
+        return new TaskWithInitState<T[], TResult>(this, initState);
     }
 
     /**
-     * Wrap this task with specified scheduler.
+     * Create a new task, which will execute this task in specified scheduler.
      * @param scheduler
      * @return
      */

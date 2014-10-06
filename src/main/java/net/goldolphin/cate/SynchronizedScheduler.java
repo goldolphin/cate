@@ -7,7 +7,7 @@ package net.goldolphin.cate;
  */
 public class SynchronizedScheduler implements IScheduler {
     @Override
-    public void schedule(ITask<?> task, Object state, IContinuation cont, ITask<?> previous) {
-        task.onExecute(state, cont, previous, this);
+    public void schedule(Object state, IContinuation cont, ITask<?> previous) {
+        cont.apply(state, previous, this);
     }
 }

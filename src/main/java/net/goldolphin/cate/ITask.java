@@ -7,13 +7,15 @@ package net.goldolphin.cate;
  *         2014-09-05 22:46
  */
 public interface ITask<TResult> {
-    /**
-     * Execute the task with specified init state & continuation.
-     * @param state the init state of the task.
-     * @param cont
-     * @param scheduler
-     */
-    public void execute(Object state, IContinuation cont, IScheduler scheduler);
+//    /**
+//     * Execute the task with specified init state & continuation.
+//     * @param state the init state of the task.
+//     * @param cont
+//     * @param scheduler
+//     */
+//    public void execute(Object state, IContinuation cont, IScheduler scheduler);
+
+    public IContinuation buildContinuation(IContinuation cont);
 
     /**
      * Action should be done when the task is executed. Continuation should be applied usually.

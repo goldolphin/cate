@@ -5,21 +5,21 @@ package net.goldolphin.cate;
  *         2014-09-11 11:40
  */
 public class TaskWithInitState<T, TResult> extends Task<TResult> {
-    private final T input;
     private final ITask<?> task;
+    private final T initState;
 
-    public TaskWithInitState(T input, ITask<?> task) {
-        this.input = input;
+    public TaskWithInitState(ITask<?> task, T initState) {
         this.task = task;
+        this.initState = initState;
     }
 
     @Override
-    public void execute(Object state, IContinuation cont, IScheduler scheduler) {
-        task.execute(input, cont, scheduler);
+    public IContinuation buildContinuation(IContinuation cont) {
+        return new Continuation(task.buildContinuation(cont), this);
     }
 
     @Override
     public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
-        throw new UnsupportedOperationException();
+        cont.apply(initState, this, scheduler);
     }
 }

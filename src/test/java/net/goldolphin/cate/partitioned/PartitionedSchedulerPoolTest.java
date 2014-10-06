@@ -39,13 +39,13 @@ public class PartitionedSchedulerPoolTest {
 
         for (int i = 0; i < 100; i ++) {
             Waiter<Boolean> waiter = task.continueWithWaiter();
-            schedulerPool.execute(i, waiter, i);
+            waiter.execute(i, schedulerPool.getScheduler(i));
             Assert.assertTrue(waiter.getResult());
         }
 
         for (int i = 0; i < 10; i ++) {
             Waiter<Boolean> waiter = task.continueWithWaiter();
-            schedulerPool.execute(i, waiter, i);
+            waiter.execute(i, schedulerPool.getScheduler(i));
             Assert.assertTrue(waiter.getResult());
         }
 

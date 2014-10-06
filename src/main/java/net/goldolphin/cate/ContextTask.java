@@ -12,8 +12,8 @@ public class ContextTask<T, TResult> extends Task<TResult> {
     }
 
     @Override
-    public void execute(Object state, IContinuation cont, IScheduler scheduler) {
-        scheduler.schedule(this, state, cont, null);
+    public IContinuation buildContinuation(IContinuation cont) {
+        return new Continuation(cont, this);
     }
 
     @Override

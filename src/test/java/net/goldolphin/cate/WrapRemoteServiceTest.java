@@ -12,6 +12,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author goldolphin
@@ -42,30 +43,32 @@ public class WrapRemoteServiceTest {
         });
 
         // Initialize the async client.
-        final AsyncClient<String, Integer, Boolean> client = new AsyncClient<String, Integer, Boolean>(store, evenChecker);
+        Timer timer = new Timer();
+        final AsyncClient<String, Integer, Boolean> client = new AsyncClient<String, Integer, Boolean>(evenChecker, store, timer);
 
         // Run
         try {
             evenChecker.start(new Service.Handler<String, Boolean>() {
                 @Override
                 public void onReceive(String key, Boolean result) {
-                    schedulerPool.execute(key, client.onReceive(key, result));
+                    client.onReceive(key, result).execute(schedulerPool.getScheduler(key));
                 }
             });
 
-            Waiter<Boolean>[] waiters = (Waiter<Boolean>[]) new Waiter<?>[10];
+            Waiter<Maybe<Boolean>>[] waiters = (Waiter<Maybe<Boolean>>[]) new Waiter<?>[10];
             Random random = new Random();
             for (int i = 0; i < waiters.length; i ++) {
                 String key = Long.toHexString(random.nextLong());
-                Waiter<Boolean> waiter = client.call(key, i).continueWithWaiter();
-                schedulerPool.execute(key, waiter);
+                Waiter<Maybe<Boolean>> waiter = client.call(key, i, 100, TimeUnit.MILLISECONDS).continueWithWaiter();
+                waiter.execute(schedulerPool.getScheduler(key));
                 waiters[i] = waiter;
             }
             for (int i = 0; i < waiters.length; i ++) {
-                Assert.assertEquals(i % 2 == 0, waiters[i].getResult());
+                Assert.assertEquals(i % 2 == 0, waiters[i].getResult().get());
             }
         } finally {
             evenChecker.shutdown();
+            timer.shutdown();
         }
     }
 
@@ -138,13 +141,14 @@ public class WrapRemoteServiceTest {
      * @param <V2>
      */
     public static class AsyncClient<K, V1, V2> {
-        private final IStore<K, Context<Unit, V2>> store;
         private final Service<K, V1, V2> service;
-        private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        private final IStore<K, Context<Unit, V2>> store;
+        private final Timer timer;
 
-        public AsyncClient(IStore<K, Context<Unit, V2>> store, Service<K, V1, V2> service) {
-            this.store = store;
+        public AsyncClient(Service<K, V1, V2> service, IStore<K, Context<Unit, V2>> store, Timer timer) {
             this.service = service;
+            this.store = store;
+            this.timer = timer;
         }
 
         public Task<V2> call(final K key, final V1 input) {
@@ -157,14 +161,51 @@ public class WrapRemoteServiceTest {
             });
         }
 
+        public Task<Maybe<V2>> call(K key, V1 input, long timeout, TimeUnit unit) {
+            return timer.withTimeout(call(key, input), timeout, unit);
+        }
+
         public Task<Unit> onReceive(final K key, final V2 result) {
             return Task.create(new Action0() {
                 @Override
                 public void apply() {
                     Context<Unit, V2> context = store.remove(key);
                     if (context != null) {
-                        context.resume(result);
+                        context.resumeSynchronously(result);
                     }
+                }
+            });
+        }
+    }
+
+    public static class Timer {
+        private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+
+        public void shutdown() {
+            executor.shutdown();
+        }
+
+        public <T> Task<T> delay(final T result, final long delay, final TimeUnit unit) {
+            return Task.create(new ContextAction<Object, T>() {
+                @Override
+                public void apply(final Context<Object, T> context) {
+                    executor.schedule(new Runnable() {
+                        @Override
+                        public void run() {
+                            System.out.println("Timer triggered.");
+                            context.resume(result);
+                        }
+                    }, delay, unit);
+                }
+            });
+        }
+
+        public <T> Task<Maybe<T>> withTimeout(ITask<T> task, long timeout, TimeUnit unit) {
+            final Object timeoutFlag = new Object();
+            return Task.whenAny(task, delay(timeoutFlag, timeout, unit)).continueWith(new Func1<WhenAnyTask.Result, Maybe<T>>() {
+                @Override
+                public Maybe<T> apply(WhenAnyTask.Result value) {
+                    return value.result == timeoutFlag ? Maybe.<T>nothing() : Maybe.just((T)value.result);
                 }
             });
         }

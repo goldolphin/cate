@@ -7,11 +7,10 @@ package net.goldolphin.cate;
  */
 public interface IScheduler {
     /**
-     * Schedule and execute a task itself, i.e. invoke {@link ITask#onExecute}.
+     * Schedule and execute a task.
      * @param task
      * @param state
      * @param cont
-     * @param previous
      */
-    public void schedule(ITask<?> task, Object state, IContinuation cont, ITask<?> previous);
+    public void schedule(Object state, IContinuation cont, ITask<?> previous);
 }
