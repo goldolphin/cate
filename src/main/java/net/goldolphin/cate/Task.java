@@ -1,7 +1,8 @@
 package net.goldolphin.cate;
 
 /**
- * Abstract base class that simplify usage of tasks.
+ * Abstract base class that simplify usage of tasks.<p />
+ * For a general view of a task, please refer to {@link net.goldolphin.cate.ITask}
  * @param <TResult> result type.
  * @author goldolphin
  *         2014-09-06 15:12

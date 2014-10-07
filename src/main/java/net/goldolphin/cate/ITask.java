@@ -1,7 +1,12 @@
 package net.goldolphin.cate;
 
 /**
- * A task.
+ * Interface of a task.<p />
+ * A task has an input(called input state) & and a result(called output state).<p />
+ * In short, the input state is passed from the antecedent task or by the user, and the output state will be
+ * passed to the subsequent task(s) through the continuation. Users can change the default behavior by implementing
+ * customized tasks & continuations.
+ *
  * @param <TResult> the result type.
  * @author goldolphin
  *         2014-09-05 22:46
