@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  * @author goldolphin
  *         2014-10-01 13:54
  */
-public class WrapRemoteServiceTest {
+public class WrapRemoteClientTest {
 
     @Test
     public void testWrap() throws Exception {
@@ -41,7 +41,7 @@ public class WrapRemoteServiceTest {
                 = new PartitionedStore<String, Context<Unit, Boolean>>(schedulerPool);
 
         // Initialize the service.
-        Service<String, Integer, Boolean> evenChecker = new Service<String, Integer, Boolean>(new Func1<Integer, Boolean>() {
+        Client<String, Integer, Boolean> evenChecker = new Client<String, Integer, Boolean>(new Func1<Integer, Boolean>() {
             @Override
             public Boolean apply(Integer value) {
                 return value % 2 == 0;
@@ -53,7 +53,7 @@ public class WrapRemoteServiceTest {
 
         // Run
         try {
-            evenChecker.start(new Service.Handler<String, Boolean>() {
+            evenChecker.start(new Client.Handler<String, Boolean>() {
                 @Override
                 public void onReceive(String key, Boolean result) {
                     client.onReceive(key, result).execute(schedulerPool.getScheduler(key));
@@ -111,17 +111,17 @@ public class WrapRemoteServiceTest {
     }
 
     /**
-     * A Fake service.
+     * A Fake producer/consumer client.
      * @param <K>
      * @param <V1>
      * @param <V2>
      */
-    public static class Service<K, V1, V2> {
+    public static class Client<K, V1, V2> {
         private final Func1<V1, V2> logic;
         private final ExecutorService executor;
         private final BlockingQueue<Pair<K, V1>> queue = new ArrayBlockingQueue<Pair<K, V1>>(100);
 
-        public Service(Func1<V1, V2> logic) {
+        public Client(Func1<V1, V2> logic) {
             this.logic = logic;
             executor = Executors.newSingleThreadExecutor();
         }
@@ -197,12 +197,12 @@ public class WrapRemoteServiceTest {
      * @param <V2>
      */
     public static class AsyncClient<K, V1, V2> {
-        private final Service<K, V1, V2> service;
+        private final Client<K, V1, V2> client;
         private final IStore<K, Context<Unit, V2>> store;
         private final Timer timer = new ExecutorTimer();
 
-        public AsyncClient(Service<K, V1, V2> service, IStore<K, Context<Unit, V2>> store) {
-            this.service = service;
+        public AsyncClient(Client<K, V1, V2> client, IStore<K, Context<Unit, V2>> store) {
+            this.client = client;
             this.store = store;
         }
 
@@ -212,7 +212,7 @@ public class WrapRemoteServiceTest {
                 public void apply(Context<Unit, V2> context) {
                     addThreadInfo(key);
                     store.put(key, context);
-                    service.send(key, input);
+                    client.send(key, input);
                 }
             });
         }

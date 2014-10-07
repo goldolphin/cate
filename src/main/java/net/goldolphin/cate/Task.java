@@ -8,7 +8,7 @@ package net.goldolphin.cate;
  */
 public abstract class Task<TResult> implements ITask<TResult> {
     /**
-     * Execute the task without any continuation.
+     * Execute the task with <tt>null</tt> as init state.
      * @param scheduler
      */
     public void execute(IScheduler scheduler) {
@@ -16,7 +16,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
     }
 
     /**
-     * Execute the task with specified init state but no continuation.
+     * Execute the task with specified init state in specified scheduler.
      * @param state
      * @param scheduler
      */
