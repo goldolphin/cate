@@ -19,7 +19,7 @@ public class TaskWithInitState<T, TResult> extends Task<TResult> {
     }
 
     @Override
-    public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
-        cont.apply(initState, this, scheduler);
+    public void onExecute(Object state, IContinuation cont, IScheduler scheduler) {
+        cont.apply(initState, scheduler);
     }
 }

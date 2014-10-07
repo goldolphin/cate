@@ -17,8 +17,8 @@ public class ContextTask<T, TResult> extends Task<TResult> {
     }
 
     @Override
-    public void onExecute(Object state, final IContinuation cont, final ITask<?> previous, final IScheduler scheduler) {
-        Context<T, TResult> context = new Context<T, TResult>((T) state, cont, this, scheduler);
+    public void onExecute(Object state, final IContinuation cont, final IScheduler scheduler) {
+        Context<T, TResult> context = new Context<T, TResult>((T) state, cont, scheduler);
         action.apply(context);
     }
 }

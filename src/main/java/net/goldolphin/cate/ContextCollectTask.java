@@ -19,8 +19,8 @@ public class ContextCollectTask<TResult> extends CollectTask<TResult> {
     }
 
     @Override
-    public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
-        Context<Object, TResult> context = new Context<Object, TResult>(state, cont, previous, scheduler);
+    public void onExecute(Object state, IContinuation cont, IScheduler scheduler) {
+        Context<Object, TResult> context = new Context<Object, TResult>(state, cont, scheduler);
         action.apply(context);
     }
 }

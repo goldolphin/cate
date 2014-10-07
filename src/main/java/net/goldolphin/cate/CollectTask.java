@@ -46,9 +46,9 @@ public abstract class CollectTask<TResult> extends Task<TResult> {
         }
 
         @Override
-        public void apply(Object state, ITask<?> previous, IScheduler scheduler) {
+        public void apply(Object state, IScheduler scheduler) {
             for (IContinuation cont: next) {
-                cont.apply(state, previous, scheduler);
+                cont.apply(state, scheduler);
             }
         }
     }

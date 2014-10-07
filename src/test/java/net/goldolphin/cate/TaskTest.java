@@ -1,6 +1,8 @@
 package net.goldolphin.cate;
 
 import org.junit.Test;
+
+import java.util.List;
 import java.util.concurrent.Executors;
 
 public class TaskTest {
@@ -121,10 +123,10 @@ public class TaskTest {
             });
 
             // Collect results of the 2 task2
-            return Task.whenAll(task2, task3).continueWith(new Func1<Object[], Integer>() {
+            return Task.whenAll(task2, task3).continueWith(new Func1<List<Object>, Integer>() {
                 @Override
-                public Integer apply(Object[] value) {
-                    return (Integer) value[0] + (Integer) value[1];
+                public Integer apply(List<Object> value) {
+                    return (Integer) value.get(0) + (Integer) value.get(1);
                 }
             });
         }
@@ -137,10 +139,10 @@ public class TaskTest {
 
     public static class DebugScheduler extends SynchronizedScheduler {
         @Override
-        public void schedule(Object state, IContinuation cont, ITask<?> previous) {
-            System.out.format("Run: state=%s, cont=%s, previous=%s, scheduler=%s\n",
-                    state, cont, previous, this);
-            super.schedule(state, cont, previous);
+        public void schedule(Object state, IContinuation cont) {
+            System.out.format("Run: state=%s, cont=%s, scheduler=%s\n",
+                    state, cont, this);
+            super.schedule(state, cont);
         }
     }
 }

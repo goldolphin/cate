@@ -11,7 +11,7 @@ public interface IContinuation {
      */
     public static IContinuation END_CONTINUATION = new IContinuation() {
         @Override
-        public void apply(Object state, ITask<?> previous, IScheduler scheduler) {
+        public void apply(Object state, IScheduler scheduler) {
         }
 
         @Override
@@ -23,8 +23,7 @@ public interface IContinuation {
     /**
      * Apply the continuation.
      * @param state
-     * @param previous
      * @param scheduler
      */
-    public void apply(Object state, ITask<?> previous, IScheduler scheduler);
+    public void apply(Object state, IScheduler scheduler);
 }

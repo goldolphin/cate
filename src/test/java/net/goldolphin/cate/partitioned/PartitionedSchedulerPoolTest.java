@@ -49,13 +49,13 @@ public class PartitionedSchedulerPoolTest {
             Assert.assertTrue(waiter.getResult());
         }
 
-        for (Map<Integer, IScheduler> map: store.getMaps()) {
+        for (Map<Integer, IScheduler> map: store.getData()) {
             IScheduler s0 = null;
             for (IScheduler s: map.values()) {
                 if (s0 == null) {
                     s0 = s;
                 } else {
-                    Assert.assertEquals(s0, s);
+                    Assert.assertSame(s0, s);
                 }
             }
         }

@@ -3,7 +3,7 @@ package net.goldolphin.cate.partitioned;
 import net.goldolphin.cate.IScheduler;
 
 /**
- * A scheduler pool which schedule tasks using a partitioning algorithm.
+ * A scheduler pool which is used to schedule tasks using a partitioning algorithm.
  * @param <K> the key type used to select scheduler.
  * @author goldolphin
  *         2014-09-30 19:26

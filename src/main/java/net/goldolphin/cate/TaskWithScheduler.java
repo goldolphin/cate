@@ -20,9 +20,9 @@ public class TaskWithScheduler<TResult> extends Task<TResult> {
     }
 
     @Override
-    public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
+    public void onExecute(Object state, IContinuation cont, IScheduler scheduler) {
         IContinuation newCont = task.buildContinuation(new Continuation(cont, scheduler));
-        this.scheduler.schedule(state, newCont, this);
+        this.scheduler.schedule(state, newCont);
     }
 
     public static class Continuation implements IContinuation {
@@ -35,8 +35,8 @@ public class TaskWithScheduler<TResult> extends Task<TResult> {
         }
 
         @Override
-        public void apply(Object state, ITask<?> previous, IScheduler scheduler) {
-            this.scheduler.schedule(state, next, previous);
+        public void apply(Object state, IScheduler scheduler) {
+            this.scheduler.schedule(state, next);
         }
     }
 }

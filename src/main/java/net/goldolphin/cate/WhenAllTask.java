@@ -1,11 +1,14 @@
 package net.goldolphin.cate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A task which will complete when all specified tasks complete.
  * @author goldolphin
  *         2014-09-06 18:27
  */
-public class WhenAllTask extends CollectTask<Object[]> {
+public class WhenAllTask extends CollectTask<List<Object>> {
 
     public WhenAllTask(ITask<?> ... tasks) {
         super(tasks);
@@ -17,41 +20,32 @@ public class WhenAllTask extends CollectTask<Object[]> {
     }
 
     @Override
-    public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
+    public void onExecute(Object state, IContinuation cont, IScheduler scheduler) {
         throw new UnsupportedOperationException();
     }
 
     public static class Continuation implements IContinuation {
         private final IContinuation next;
         private final WhenAllTask task;
-        private final Object[] results;
+        private final List<Object> results;
         private int complete = 0;
 
         public Continuation(IContinuation next, WhenAllTask task) {
             this.next = next;
             this.task = task;
-            results = new Object[task.getTasks().length];
+            results = new ArrayList<Object>(task.getTasks().length);
         }
 
         @Override
-        public void apply(Object state, ITask<?> previous, IScheduler scheduler) {
+        public void apply(Object state, IScheduler scheduler) {
             complete += 1;
             int total = task.getTasks().length;
             if (complete > total) {
                 throw new IllegalStateException("Invalid complete value: " + complete + " exceeds " + total);
             }
-            setResult(state, previous);
+            results.add(state);
             if (complete == total) {
-                next.apply(results, previous, scheduler);
-            }
-        }
-
-        private void setResult(Object state, ITask<?> task) {
-            for (int i = 0; i < results.length; i ++) {
-                if (task == this.task.getTasks()[i]) {
-                    results[i] = state;
-                    break;
-                }
+                next.apply(results, scheduler);
             }
         }
     }

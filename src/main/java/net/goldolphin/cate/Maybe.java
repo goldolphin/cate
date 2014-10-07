@@ -48,4 +48,12 @@ public class Maybe<T> {
     public static <T> Maybe<T> just(T value) {
         return new Maybe<T>(value);
     }
+
+    @Override
+    public String toString() {
+        return isNothing() ? "Maybe{Nothing}" :
+                "Maybe{" +
+                "Just " + value +
+                '}';
+    }
 }

@@ -62,8 +62,8 @@ public class Waiter<TResult> extends Task<TResult> {
     }
 
     @Override
-    public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler)  {
+    public void onExecute(Object state, IContinuation cont, IScheduler scheduler)  {
         setResult((TResult) state);
-        cont.apply(state, this, scheduler);
+        cont.apply(state, scheduler);
     }
 }

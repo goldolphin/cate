@@ -3,7 +3,7 @@ package net.goldolphin.cate;
 import java.util.concurrent.Executor;
 
 /**
- * Scheduler based on {@link java.util.concurrent.Executor}
+ * A scheduler based on {@link java.util.concurrent.Executor}
  * @author goldolphin
  *         2014-09-05 22:52
  */
@@ -15,11 +15,11 @@ public class ExecutorScheduler extends SynchronizedScheduler {
     }
 
     @Override
-    public void schedule(final Object state, final IContinuation cont, final ITask<?> previous) {
+    public void schedule(final Object state, final IContinuation cont) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                ExecutorScheduler.super.schedule(state, cont, previous);
+                ExecutorScheduler.super.schedule(state, cont);
             }
         });
     }

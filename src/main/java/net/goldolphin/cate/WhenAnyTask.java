@@ -5,7 +5,7 @@ package net.goldolphin.cate;
  * @author goldolphin
  *         2014-09-06 21:27
  */
-public class WhenAnyTask extends CollectTask<WhenAnyTask.Result> {
+public class WhenAnyTask extends CollectTask<Object> {
 
     public WhenAnyTask(ITask<?> ... tasks) {
         super(tasks);
@@ -17,7 +17,7 @@ public class WhenAnyTask extends CollectTask<WhenAnyTask.Result> {
     }
 
     @Override
-    public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
+    public void onExecute(Object state, IContinuation cont, IScheduler scheduler) {
         throw new UnsupportedOperationException();
     }
 
@@ -32,35 +32,14 @@ public class WhenAnyTask extends CollectTask<WhenAnyTask.Result> {
         }
 
         @Override
-        public void apply(Object state, ITask<?> previous, IScheduler scheduler) {
+        public void apply(Object state, IScheduler scheduler) {
             complete += 1;
             int total = task.getTasks().length;
             if (complete > total) {
                 throw new IllegalStateException("Invalid complete value: " + complete + " exceeds " + total);
             } else if (complete == 1) {
-                next.apply(new Result(previous, state), previous, scheduler);
+                next.apply(state, scheduler);
             }
-        }
-    }
-
-    /**
-     * Result of a WhenAnyTask
-     */
-    public static class Result {
-        public final ITask<?> task;
-        public final Object result;
-
-        public Result(ITask<?> task, Object result) {
-            this.task = task;
-            this.result = result;
-        }
-
-        @Override
-        public String toString() {
-            return "Result{" +
-                    "task=" + task +
-                    ", result=" + result +
-                    '}';
         }
     }
 }

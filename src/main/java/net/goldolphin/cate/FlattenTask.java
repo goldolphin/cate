@@ -17,7 +17,7 @@ public class FlattenTask<TResult, TTask extends ITask<TResult>> extends Task<TRe
     }
 
     @Override
-    public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
+    public void onExecute(Object state, IContinuation cont, IScheduler scheduler) {
         throw new UnsupportedOperationException();
     }
 
@@ -29,8 +29,8 @@ public class FlattenTask<TResult, TTask extends ITask<TResult>> extends Task<TRe
         }
 
         @Override
-        public void apply(Object state, ITask<?> previous, IScheduler scheduler) {
-            ((ITask<?>) state).buildContinuation(next).apply(null, null, scheduler);
+        public void apply(Object state, IScheduler scheduler) {
+            ((ITask<?>) state).buildContinuation(next).apply(null, scheduler);
         }
     }
 }

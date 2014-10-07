@@ -21,7 +21,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param scheduler
      */
     public void execute(Object state, IScheduler scheduler) {
-        scheduler.schedule(state, buildContinuation(IContinuation.END_CONTINUATION), null);
+        scheduler.schedule(state, buildContinuation(IContinuation.END_CONTINUATION));
     }
 
     /**

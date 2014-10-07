@@ -7,10 +7,9 @@ package net.goldolphin.cate;
  */
 public interface IScheduler {
     /**
-     * Schedule and execute a task.
-     * @param task
+     * Schedule and apply a continuation with specified input state.
      * @param state
      * @param cont
      */
-    public void schedule(Object state, IContinuation cont, ITask<?> previous);
+    public void schedule(Object state, IContinuation cont);
 }

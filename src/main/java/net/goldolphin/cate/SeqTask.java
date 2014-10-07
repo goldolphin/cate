@@ -19,7 +19,7 @@ public class SeqTask<AResult, TResult> extends Task<TResult> {
     }
 
     @Override
-    public void onExecute(Object state, IContinuation cont, ITask<?> previous, IScheduler scheduler) {
+    public void onExecute(Object state, IContinuation cont, IScheduler scheduler) {
         throw new UnsupportedOperationException();
     }
 }

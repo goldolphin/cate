@@ -20,8 +20,8 @@ public class Continuation implements IContinuation {
     }
 
     @Override
-    public void apply(Object state, ITask<?> previous, IScheduler scheduler) {
-        task.onExecute(state, next, previous, scheduler);
+    public void apply(Object state, IScheduler scheduler) {
+        task.onExecute(state, next, scheduler);
     }
 
     @Override

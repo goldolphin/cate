@@ -58,10 +58,10 @@ public class PartitionedStore<K, V> implements IStore<K, V> {
     }
 
     /**
-     * Returns the internal data, for test only.
+     * Returns the underlying data.
      * @return
      */
-    Map<K, V>[] getMaps() {
+    public Map<K, V>[] getData() {
         return maps;
     }
 }
