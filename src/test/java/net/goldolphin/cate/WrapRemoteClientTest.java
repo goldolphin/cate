@@ -158,6 +158,12 @@ public class WrapRemoteClientTest {
     }
 
     private static final HashMap<Object, List<Thread>> threadMap = new HashMap<Object, List<Thread>>();
+
+    /**
+     * For checking thread usages.
+     * @param key
+     * @param <K>
+     */
     private static <K> void addThreadInfo(K key) {
         synchronized (threadMap) {
             List<Thread> threads = threadMap.get(key);
@@ -169,6 +175,9 @@ public class WrapRemoteClientTest {
         }
     }
 
+    /**
+     * For checking thread usages.
+     */
     private static void checkThreadInfo() {
         for (Map.Entry<Object, List<Thread>> entry: threadMap.entrySet()) {
             List<Thread> threads = entry.getValue();
@@ -185,7 +194,7 @@ public class WrapRemoteClientTest {
     }
 
     /**
-     * A demo async client.
+     * The Task-style async client.
      * @param <K>
      * @param <V1>
      * @param <V2>
@@ -209,7 +218,7 @@ public class WrapRemoteClientTest {
             });
         }
 
-        public Task<V2> call(final K key, final V1 input) {
+        private Task<V2> call0(final K key, final V1 input) {
             return Task.create(new ContextAction<Unit, V2>() {
                 @Override
                 public void apply(Context<Unit, V2> context) {
@@ -220,8 +229,17 @@ public class WrapRemoteClientTest {
             });
         }
 
+        /**
+         * Asynchronously call the remote service. We do not provide a version without timeout mechanism, which cannot
+         * guarantee to do necessary cleanup.
+         * @param key
+         * @param input
+         * @param timeout
+         * @param unit
+         * @return
+         */
         public Task<Maybe<V2>> call(final K key, V1 input, long timeout, TimeUnit unit) {
-            return timer.withTimeout(call(key, input), timeout, unit)
+            return timer.withTimeout(call0(key, input), timeout, unit)
                     .continueWith(new Func1<Maybe<V2>, Maybe<V2>>() {
                         @Override
                         public Maybe<V2> apply(Maybe<V2> value) {
@@ -233,6 +251,10 @@ public class WrapRemoteClientTest {
                     });
         }
 
+        /**
+         * For test only.
+         * @return
+         */
         public ConcurrentHashMap<K, Context<Unit, V2>> getRequestRecords() {
             return requestRecords;
         }
