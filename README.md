@@ -18,5 +18,9 @@ Here is an code example with detailed comments, which describes the main feature
 
 [src/test/java/net/goldolphin/cate/TaskTest.java](src/test/java/net/goldolphin/cate/TaskTest.java)
 
+Another example which demonstrate how to wrap a typical producer/consumer client into a **Task**-style client with timeout mechanism: 
+
+[src/test/java/net/goldolphin/cate/WrapRemoteClientTest.java](src/test/java/net/goldolphin/cate/WrapRemoteClientTest.java)
+
 ## Links
 * Source codes: [https://github.com/goldolphin/cate]((https://github.com/goldolphin/cate))
