@@ -2,7 +2,6 @@ package net.goldolphin.cate;
 
 import net.goldolphin.cate.partitioned.HashedPartitioner;
 import net.goldolphin.cate.partitioned.PartitionedSchedulerPool;
-import net.goldolphin.cate.partitioned.PartitionedStore;
 import net.goldolphin.cate.util.ExecutorTimer;
 import net.goldolphin.cate.util.Timer;
 import org.junit.Assert;
@@ -15,6 +14,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -37,8 +37,6 @@ public class WrapRemoteClientTest {
         }
         final PartitionedSchedulerPool<String> schedulerPool
                 = new PartitionedSchedulerPool<String>(schedulers, HashedPartitioner.<String>instance());
-        PartitionedStore<String, Context<Unit, Boolean>> store
-                = new PartitionedStore<String, Context<Unit, Boolean>>(schedulerPool);
 
         // Initialize the service.
         Client<String, Integer, Boolean> evenChecker = new Client<String, Integer, Boolean>(new Func1<Integer, Boolean>() {
@@ -49,33 +47,31 @@ public class WrapRemoteClientTest {
         });
 
         // Initialize the async client.
-        final AsyncClient<String, Integer, Boolean> client = new AsyncClient<String, Integer, Boolean>(evenChecker, store);
+        final AsyncClient<String, Integer, Boolean> client = new AsyncClient<String, Integer, Boolean>(evenChecker);
 
         // Run
         try {
-            evenChecker.start(new Client.Handler<String, Boolean>() {
-                @Override
-                public void onReceive(String key, Boolean result) {
-                    client.onReceive(key, result).execute(schedulerPool.getScheduler(key));
-                }
-            });
-
             Waiter<Maybe<Boolean>>[] waiters = (Waiter<Maybe<Boolean>>[]) new Waiter<?>[10];
             Random random = new Random();
             // Test when results come back in time.
             for (int i = 0; i < waiters.length; i++) {
                 String key = Long.toHexString(random.nextLong());
-                Waiter<Maybe<Boolean>> waiter = client.call(key, i, 100, TimeUnit.MILLISECONDS).continueWithWaiter();
+                Waiter<Maybe<Boolean>> waiter = client.call(key, i, 100, TimeUnit.MILLISECONDS)
+                        .continueWith(new Func1<Maybe<Boolean>, Maybe<Boolean>>() {
+                            // Revert the result.
+                            @Override
+                            public Maybe<Boolean> apply(Maybe<Boolean> value) {
+                                return value.isNothing() ? value : Maybe.just(!value.get());
+                            }
+                        }).continueWithWaiter();
                 waiter.execute(schedulerPool.getScheduler(key));
                 waiters[i] = waiter;
                 Thread.sleep(10);
             }
             for (int i = 0; i < waiters.length; i++) {
-                Assert.assertEquals(i % 2 == 0, waiters[i].getResult().get());
+                Assert.assertEquals(i % 2 != 0, waiters[i].getResult().get());
             }
-            for (Map<String, Context<Unit, Boolean>> map: store.getData()) {
-                Assert.assertEquals(0, map.size());
-            }
+            Assert.assertEquals(0, client.getRequestRecords().size());
 
             // Test when results don't come back in time.
             for (int i = 0; i < waiters.length; i++) {
@@ -88,9 +84,7 @@ public class WrapRemoteClientTest {
             for (int i = 0; i < waiters.length; i++) {
                 Assert.assertTrue(waiters[i].getResult().isNothing());
             }
-            for (Map<String, Context<Unit, Boolean>> map: store.getData()) {
-                Assert.assertEquals(0, map.size());
-            }
+            Assert.assertEquals(0, client.getRequestRecords().size());
 
             // Verify that all tasks for the same key are executed in the same thread.
             Thread.sleep(100);
@@ -198,12 +192,21 @@ public class WrapRemoteClientTest {
      */
     public static class AsyncClient<K, V1, V2> {
         private final Client<K, V1, V2> client;
-        private final IStore<K, Context<Unit, V2>> store;
+        private final ConcurrentHashMap<K, Context<Unit, V2>> requestRecords;
         private final Timer timer = new ExecutorTimer();
 
-        public AsyncClient(Client<K, V1, V2> client, IStore<K, Context<Unit, V2>> store) {
+        public AsyncClient(Client<K, V1, V2> client) {
             this.client = client;
-            this.store = store;
+            requestRecords = new ConcurrentHashMap<K, Context<Unit, V2>>();
+            client.start(new Client.Handler<K, V2>() {
+                @Override
+                public void onReceive(K key, V2 result) {
+                    Context<Unit, V2> context = requestRecords.remove(key);
+                    if (context != null) {
+                        context.resume(result);
+                    }
+                }
+            });
         }
 
         public Task<V2> call(final K key, final V1 input) {
@@ -211,7 +214,7 @@ public class WrapRemoteClientTest {
                 @Override
                 public void apply(Context<Unit, V2> context) {
                     addThreadInfo(key);
-                    store.put(key, context);
+                    requestRecords.put(key, context);
                     client.send(key, input);
                 }
             });
@@ -224,23 +227,14 @@ public class WrapRemoteClientTest {
                         public Maybe<V2> apply(Maybe<V2> value) {
                             // Cleanup.
                             addThreadInfo(key);
-                            store.remove(key);
+                            requestRecords.remove(key);
                             return value;
                         }
                     });
         }
 
-        public Task<Unit> onReceive(final K key, final V2 result) {
-            return Task.create(new Action0() {
-                @Override
-                public void apply() {
-                    addThreadInfo(key);
-                    Context<Unit, V2> context = store.remove(key);
-                    if (context != null) {
-                        context.resumeSynchronously(result);
-                    }
-                }
-            });
+        public ConcurrentHashMap<K, Context<Unit, V2>> getRequestRecords() {
+            return requestRecords;
         }
     }
 }
