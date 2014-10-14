@@ -216,7 +216,6 @@ public abstract class Task<TResult> implements ITask<TResult> {
 
     /**
      * Create a task which will complete when all specified tasks complete.<br />
-     * Beware, {@link Context} of this task contains mutable status.
      * @param tasks
      * @return
      */
@@ -226,7 +225,6 @@ public abstract class Task<TResult> implements ITask<TResult> {
 
     /**
      * Create a task which will complete when any specified task complete.
-     * Beware, {@link Context} of this task contains mutable status.
      * @param tasks
      * @return
      */

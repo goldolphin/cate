@@ -20,7 +20,7 @@ public interface ITask<TResult> {
     public IContinuation buildContinuation(IContinuation cont);
 
     /**
-     * Action should be done when the task is executed. Continuation should be applied usually.
+     * Action should be taken when the task is executed. Continuation should be applied usually.
      * @param state input state.
      * @param cont the continuation
      * @param scheduler the scheduler.

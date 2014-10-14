@@ -1,5 +1,7 @@
 package net.goldolphin.cate.util;
 
+import net.goldolphin.cate.Context;
+import net.goldolphin.cate.ContextAction;
 import net.goldolphin.cate.Func1;
 import net.goldolphin.cate.ITask;
 import net.goldolphin.cate.Maybe;
@@ -14,14 +16,31 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class Timer {
     /**
-     * Create a task, which will yield the specified result in specified delay.
+     * Resume a context after the given delay.
+     * @param context
+     * @param result
+     * @param delay
+     * @param unit
+     * @param <T>
+     */
+    public abstract <T> void resumeAfter(Context<?, T> context, T result, long delay, TimeUnit unit);
+
+    /**
+     * Create a task, which will yield the specified result after the given delay.
      * @param result
      * @param delay
      * @param unit
      * @param <T>
      * @return
      */
-    public abstract <T> Task<T> delay(final T result, final long delay, final TimeUnit unit);
+    public <T> Task<T> delay(final T result, final long delay, final TimeUnit unit) {
+        return Task.create(new ContextAction<Object, T>() {
+            @Override
+            public void apply(final Context<Object, T> context) {
+                resumeAfter(context, result, delay, unit);
+            }
+        });
+    }
 
     /**
      * Wrap the specified task with timeout mechanism.

@@ -1,8 +1,6 @@
 package net.goldolphin.cate.util;
 
 import net.goldolphin.cate.Context;
-import net.goldolphin.cate.ContextAction;
-import net.goldolphin.cate.Task;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,17 +19,13 @@ public class ExecutorTimer extends Timer {
     }
 
     @Override
-    public <T> Task<T> delay(final T result, final long delay, final TimeUnit unit) {
-        return Task.create(new ContextAction<Object, T>() {
+    public <T> void resumeAfter(final Context<?, T> context, final T result, long delay, TimeUnit unit) {
+        executor.schedule(new Runnable() {
             @Override
-            public void apply(final Context<Object, T> context) {
-                executor.schedule(new Runnable() {
-                    @Override
-                    public void run() {
-                        context.resume(result);
-                    }
-                }, delay, unit);
+            public void run() {
+                context.resume(result);
             }
-        });
+        }, delay, unit);
+
     }
 }

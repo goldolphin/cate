@@ -15,13 +15,16 @@ public class WhenAllTask extends CollectTask<List<Object>> {
     }
 
     @Override
-    protected IContinuation buildCollectorContinuation(IContinuation cont) {
-        return new Continuation(cont, this);
+    public IContinuation buildContinuation(IContinuation cont) {
+        return new net.goldolphin.cate.Continuation(cont, this);
     }
 
     @Override
     public void onExecute(Object state, IContinuation cont, IScheduler scheduler) {
-        throw new UnsupportedOperationException();
+        IContinuation collectorCont = new Continuation(cont, this);
+        for (int i = 0; i < tasks.length; i ++) {
+            tasks[i].buildContinuation(collectorCont).apply(state, scheduler);
+        }
     }
 
     public static class Continuation implements IContinuation {
