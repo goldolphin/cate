@@ -43,7 +43,7 @@ public class Context<TInput, TResult> {
      * @param newState
      */
     public void resume(TResult newState) {
-        scheduler.schedule(newState, cont);
+        scheduler.schedule(newState, cont, IContinuation.END_CONTINUATION);
     };
 
     /**
@@ -51,6 +51,6 @@ public class Context<TInput, TResult> {
      * @param newState
      */
     public void resumeSynchronously(TResult newState) {
-        cont.apply(newState, scheduler);
+        cont.apply(newState, IContinuation.END_CONTINUATION, scheduler);
     }
 }

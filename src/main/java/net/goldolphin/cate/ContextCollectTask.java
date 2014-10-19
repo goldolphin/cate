@@ -16,7 +16,7 @@ public class ContextCollectTask<TResult> extends CollectTask<TResult> {
     @Override
     public IContinuation buildContinuation(IContinuation cont) {
         IContinuation[] conts = new IContinuation[tasks.length];
-        IContinuation collectorCont = new Continuation(cont, this);
+        IContinuation collectorCont = new TaskContinuation(cont, this);
         for (int i = 0; i < tasks.length; i ++) {
             conts[i] = tasks[i].buildContinuation(collectorCont);
         }
@@ -37,9 +37,9 @@ public class ContextCollectTask<TResult> extends CollectTask<TResult> {
         }
 
         @Override
-        public void apply(Object state, IScheduler scheduler) {
+        public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
             for (IContinuation cont: next) {
-                cont.apply(state, scheduler);
+                cont.apply(state, subCont, scheduler);
             }
         }
     }

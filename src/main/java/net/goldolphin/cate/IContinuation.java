@@ -11,7 +11,10 @@ public interface IContinuation {
      */
     public static IContinuation END_CONTINUATION = new IContinuation() {
         @Override
-        public void apply(Object state, IScheduler scheduler) {
+        public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
+            if (subCont != this) {
+                subCont.apply(state, this, scheduler);
+            }
         }
 
         @Override
@@ -22,8 +25,9 @@ public interface IContinuation {
 
     /**
      * Apply the continuation.
-     * @param state
-     * @param scheduler
+     * @param state input state.
+     * @param subCont subsequent continuation, which should be applied after current one is applied.
+     * @param scheduler current scheduler.
      */
-    public void apply(Object state, IScheduler scheduler);
+    public void apply(Object state, IContinuation subCont, IScheduler scheduler);
 }

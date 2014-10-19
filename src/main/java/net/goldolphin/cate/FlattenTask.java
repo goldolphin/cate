@@ -29,8 +29,8 @@ public class FlattenTask<TResult, TTask extends ITask<TResult>> extends Task<TRe
         }
 
         @Override
-        public void apply(Object state, IScheduler scheduler) {
-            ((ITask<?>) state).buildContinuation(next).apply(null, scheduler);
+        public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
+            ((ITask<?>) state).buildContinuation(next).apply(null, subCont, scheduler);
         }
     }
 }

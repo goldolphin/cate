@@ -9,46 +9,49 @@ import java.util.List;
  *         2014-09-06 18:27
  */
 public class WhenAllTask extends CollectTask<List<Object>> {
+    private final IContinuation[] conts;
 
     public WhenAllTask(ITask<?> ... tasks) {
         super(tasks);
+        conts = new IContinuation[tasks.length];
+        for (int i = 0; i < tasks.length; i ++) {
+            conts[i] = tasks[i].buildContinuation(IContinuation.END_CONTINUATION);
+        }
     }
 
     @Override
     public IContinuation buildContinuation(IContinuation cont) {
-        return new net.goldolphin.cate.Continuation(cont, this);
+        return new TaskContinuation(cont, this);
     }
 
     @Override
     public void onExecute(Object state, IContinuation cont, IScheduler scheduler) {
-        IContinuation collectorCont = new Continuation(cont, this);
-        for (int i = 0; i < tasks.length; i ++) {
-            tasks[i].buildContinuation(collectorCont).apply(state, scheduler);
+        IContinuation collectCont = new Continuation(cont);
+        for (IContinuation c: conts) {
+            c.apply(state, collectCont, scheduler);
         }
     }
 
-    public static class Continuation implements IContinuation {
+    public class Continuation implements IContinuation {
         private final IContinuation next;
-        private final WhenAllTask task;
         private final List<Object> results;
         private int complete = 0;
 
-        public Continuation(IContinuation next, WhenAllTask task) {
+        public Continuation(IContinuation next) {
             this.next = next;
-            this.task = task;
-            results = new ArrayList<Object>(task.getTasks().length);
+            results = new ArrayList<Object>(getTasks().length);
         }
 
         @Override
-        public void apply(Object state, IScheduler scheduler) {
+        public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
             complete += 1;
-            int total = task.getTasks().length;
+            int total = getTasks().length;
             if (complete > total) {
                 throw new IllegalStateException("Invalid complete value: " + complete + " exceeds " + total);
             }
             results.add(state);
             if (complete == total) {
-                next.apply(results, scheduler);
+                next.apply(results, subCont, scheduler);
             }
         }
     }

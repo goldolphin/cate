@@ -22,7 +22,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param scheduler
      */
     public void execute(Object state, IScheduler scheduler) {
-        scheduler.schedule(state, buildContinuation(IContinuation.END_CONTINUATION));
+        scheduler.schedule(state, buildContinuation(IContinuation.END_CONTINUATION), IContinuation.END_CONTINUATION);
     }
 
     /**
@@ -45,32 +45,12 @@ public abstract class Task<TResult> implements ITask<TResult> {
     }
 
     /**
-     * After this task completes, flatten the result and continue to execute the specified task.
-     * @param task
-     * @param <SResult>
-     * @return
-     */
-    public <SResult> Task<SResult> flattenAndContinueWith(ITask<SResult> task) {
-        return this.flatten().continueWith(task);
-    }
-
-    /**
      * After this task completes, continue to execute the specified action.
      * @param action
      * @return
      */
     public Task<Unit> continueWith(Action1<TResult> action) {
         return continueWith(create(action));
-    }
-
-    /**
-     * After this task completes, flatten the result recursively and continue to execute the specified action.
-     * @param action
-     * @param <T>
-     * @return
-     */
-    public <T> Task<Unit> flattenAndContinueWith(Action1<T> action) {
-        return flattenAndContinueWith(create(action));
     }
 
     /**
@@ -84,17 +64,6 @@ public abstract class Task<TResult> implements ITask<TResult> {
     }
 
     /**
-     * After this task completes, flatten the result and continue to execute the specified function.
-     * @param func
-     * @param <T>
-     * @param <SResult>
-     * @return
-     */
-    public <T, SResult> Task<SResult> flattenAndContinueWith(Func1<T, SResult> func) {
-        return flattenAndContinueWith(create(func));
-    }
-
-    /**
      * After this task completes, continue to execute the specified action.
      * {@link Context#resume} must be invoked to resume the control flow.
      * @param action
@@ -103,17 +72,6 @@ public abstract class Task<TResult> implements ITask<TResult> {
      */
     public <SResult> Task<SResult> continueWith(ContextAction<TResult, SResult> action) {
         return continueWith(create(action));
-    }
-
-    /**
-     * After this task completes, flatten the result and continue to execute the specified function.
-     * {@link Context#resume} must be invoked to resume the control flow.
-     * @param action
-     * @param <SResult>
-     * @return
-     */
-    public <SResult> Task<SResult> flattenAndContinueWith(ContextAction<TResult, SResult> action) {
-        return flattenAndContinueWith(create(action));
     }
 
     /**
@@ -230,16 +188,5 @@ public abstract class Task<TResult> implements ITask<TResult> {
      */
     public static WhenAnyTask whenAny(ITask<?>... tasks) {
         return new WhenAnyTask(tasks);
-    }
-
-    /**
-     * Flatten the result of the specified task non-recursively.
-     * @param task
-     * @param <TResult>
-     * @param <TTask>
-     * @return
-     */
-    public static <TResult, TTask extends ITask<TResult>> Task<TResult> flattenOnce(ITask<TTask> task) {
-        return new FlattenTask<TResult, TTask>(task);
     }
 }

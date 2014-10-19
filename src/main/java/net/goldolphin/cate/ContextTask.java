@@ -13,7 +13,7 @@ public class ContextTask<T, TResult> extends Task<TResult> {
 
     @Override
     public IContinuation buildContinuation(IContinuation cont) {
-        return new Continuation(cont, this);
+        return new TaskContinuation(cont, this);
     }
 
     @Override

@@ -1,11 +1,11 @@
 package net.goldolphin.cate;
 
 /**
- * A basic continuation.
+ * A basic continuation for tasks.
  * @author goldolphin
  *         2014-10-02 12:00
  */
-public class Continuation implements IContinuation {
+public class TaskContinuation implements IContinuation {
     protected final IContinuation next;
     protected final ITask<?> task;
 
@@ -14,14 +14,14 @@ public class Continuation implements IContinuation {
      * @param next
      * @param task
      */
-    public Continuation(IContinuation next, ITask<?> task) {
+    public TaskContinuation(IContinuation next, ITask<?> task) {
         this.next = next;
         this.task = task;
     }
 
     @Override
-    public void apply(Object state, IScheduler scheduler) {
-        task.onExecute(state, next, scheduler);
+    public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
+        task.onExecute(state, SeqContinuation.seq(next, subCont), scheduler);
     }
 
     @Override

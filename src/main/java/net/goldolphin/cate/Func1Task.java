@@ -13,11 +13,11 @@ public class Func1Task<T, TResult> extends Task<TResult> {
 
     @Override
     public IContinuation buildContinuation(IContinuation cont) {
-        return new Continuation(cont, this);
+        return new TaskContinuation(cont, this);
     }
 
     @Override
     public void onExecute(Object state, IContinuation cont, IScheduler scheduler) {
-        cont.apply(func.apply((T) state), scheduler);
+        cont.apply(func.apply((T) state), IContinuation.END_CONTINUATION, scheduler);
     }
 }

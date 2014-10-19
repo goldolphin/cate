@@ -7,25 +7,26 @@ package net.goldolphin.cate;
  */
 public class TaskWithScheduler<TResult> extends Task<TResult> {
     private final ITask<TResult> task;
+    private final IContinuation cont;
     private final IScheduler scheduler;
 
     public TaskWithScheduler(ITask<TResult> task, IScheduler scheduler) {
         this.task = task;
+        cont = task.buildContinuation(IContinuation.END_CONTINUATION);
         this.scheduler = scheduler;
     }
 
     @Override
     public IContinuation buildContinuation(IContinuation cont) {
-        return new net.goldolphin.cate.Continuation(cont, this);
+        return new TaskContinuation(cont, this);
     }
 
     @Override
     public void onExecute(Object state, IContinuation cont, IScheduler scheduler) {
         if (scheduler == this.scheduler) {
-            task.buildContinuation(cont).apply(state, scheduler);
+            this.cont.apply(state, cont, scheduler);
         } else {
-            IContinuation newCont = task.buildContinuation(new Continuation(cont, scheduler));
-            this.scheduler.schedule(state, newCont);
+            this.scheduler.schedule(state, this.cont, new Continuation(cont, scheduler));
         }
     }
 
@@ -39,8 +40,8 @@ public class TaskWithScheduler<TResult> extends Task<TResult> {
         }
 
         @Override
-        public void apply(Object state, IScheduler scheduler) {
-            this.scheduler.schedule(state, next);
+        public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
+            this.scheduler.schedule(state, next, subCont);
         }
     }
 }

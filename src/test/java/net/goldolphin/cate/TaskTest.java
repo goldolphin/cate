@@ -1,5 +1,6 @@
 package net.goldolphin.cate;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
@@ -15,11 +16,13 @@ public class TaskTest {
         Waiter<Integer> waiter1 = testAsync(1).continueWithWaiter();
         waiter1.execute(new DebugScheduler());
         System.out.println(waiter1.getResult());
+        Assert.assertEquals(40, waiter1.getResult().intValue());
 
         // Executed in a thread pool.
         Waiter<Integer> waiter2 = testAsync(2).continueWithWaiter();
         waiter2.execute(new ExecutorScheduler(Executors.newSingleThreadExecutor()));
         System.out.println(waiter2.getResult());
+        Assert.assertEquals(50, waiter2.getResult().intValue());
     }
 
     /**
@@ -103,46 +106,41 @@ public class TaskTest {
             }
             return addAsync(value, 2);
         }
-    }).flattenAndContinueWith(new Func1<Integer, Task<Integer>>() {
-        // We must flatten the nested task(schedule the nested task) before we use the Integer.
-        @Override
-        public Task<Integer> apply(final Integer value) {
-            // Spawn 2 tasks.
-            final Task<Integer> task2 = Task.create(new Func0<Integer>() {
-                @Override
-                public Integer apply() {
-                    return value * 2;
-                }
-            });
-
-            final Task<Integer> task3 = Task.create(new Func0<Integer>() {
-                @Override
-                public Integer apply() {
-                    return value * 3;
-                }
-            });
-
-            // Collect results of the 2 task2
-            return Task.whenAll(task2, task3).continueWith(new Func1<List<Object>, Integer>() {
+    }).<Integer>flatten() // We must flatten the nested task(schedule the nested task) before we use the Integer.
+      .continueWith(
+              Task.whenAll(
+                      // Spawn 2 tasks.
+                      Task.create(new Func1<Integer, Integer>() {
+                          @Override
+                          public Integer apply(Integer value) {
+                              return value * 2;
+                          }
+                      }),
+                      Task.create(new Func1<Integer, Integer>() {
+                          @Override
+                          public Integer apply(Integer value) {
+                              return value * 3;
+                          }
+                      }))
+      ).continueWith(new Func1<List<Object>, Integer>() {
+                // Collect results of the 2 task2
                 @Override
                 public Integer apply(List<Object> value) {
                     return (Integer) value.get(0) + (Integer) value.get(1);
                 }
+            }).continueWith(new Func1<Integer, Integer>() {
+                @Override
+                public Integer apply(Integer value) {
+                    return value * 2;
+                }
             });
-        }
-    }).flattenAndContinueWith(new Func1<Integer, Integer>() {
-        @Override
-        public Integer apply(Integer value) {
-            return value * 2;
-        }
-    });
 
     public static class DebugScheduler extends SynchronizedScheduler {
         @Override
-        public void schedule(Object state, IContinuation cont) {
-            System.out.format("Run: state=%s, cont=%s, scheduler=%s\n",
-                    state, cont, this);
-            super.schedule(state, cont);
+        public void schedule(Object state, IContinuation cont, IContinuation subCont) {
+            System.out.format("Run: state=%s, cont=%s, subCont=%s, scheduler=%s\n",
+                    state, cont, subCont, this);
+            super.schedule(state, cont, subCont);
         }
     }
 }
