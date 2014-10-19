@@ -5,10 +5,10 @@ package net.goldolphin.cate;
  * @author goldolphin
  *         2014-09-13 15:43
  */
-public class ContextCollectTask<TResult> extends CollectTask<TResult> {
+public class ContextCollectTask<TInput, TResult> extends CollectTask<TInput, TResult> {
     private final ContextAction<Object, TResult> action;
 
-    public ContextCollectTask(ContextAction<Object, TResult> action, ITask<?> ... tasks) {
+    public ContextCollectTask(ContextAction<Object, TResult> action, ITask<TInput, ?> ... tasks) {
         super(tasks);
         this.action = action;
     }
@@ -16,7 +16,7 @@ public class ContextCollectTask<TResult> extends CollectTask<TResult> {
     @Override
     public IContinuation buildContinuation(IContinuation cont) {
         IContinuation[] conts = new IContinuation[tasks.length];
-        IContinuation collectorCont = new TaskContinuation(cont, this);
+        IContinuation collectorCont = new TaskContinuation<TInput>(cont, this);
         for (int i = 0; i < tasks.length; i ++) {
             conts[i] = tasks[i].buildContinuation(collectorCont);
         }

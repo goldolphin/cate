@@ -13,13 +13,13 @@ public class TaskTest {
         // We use a Waiter to force main thread to wait the async task.
         // The Waiter, which can be considered as a traditional java future, is a friendly utility for testing.
         // Don't use it in a pure async program, for it may block the execution.
-        Waiter<Integer> waiter1 = testAsync(1).continueWithWaiter();
+        Waiter<Unit, Integer> waiter1 = testAsync(1).continueWithWaiter();
         waiter1.execute(new DebugScheduler());
         System.out.println(waiter1.getResult());
         Assert.assertEquals(40, waiter1.getResult().intValue());
 
         // Executed in a thread pool.
-        Waiter<Integer> waiter2 = testAsync(2).continueWithWaiter();
+        Waiter<Unit, Integer> waiter2 = testAsync(2).continueWithWaiter();
         waiter2.execute(new ExecutorScheduler(Executors.newSingleThreadExecutor()));
         System.out.println(waiter2.getResult());
         Assert.assertEquals(50, waiter2.getResult().intValue());
@@ -46,15 +46,15 @@ public class TaskTest {
      * @param b
      * @return
      */
-    public static ITask<Integer> addAsync(int a, int b) {
+    public static Task<Unit, Integer> addAsync(int a, int b) {
         return addAsyncTask.withInitState(new int[]{a, b});
     }
 
     /**
      * This task is stateless, so we can build the task once and always reuse it.
-     * Most primitive tasks are stateless, but {@link Waiter} is stateful.
+     * Most primitive tasks are stateless, but {@link net.goldolphin.cate.Waiter} is stateful.
      */
-    private static final Task<Integer> addAsyncTask = Task.create(new ContextAction<int[], Integer>() {
+    private static final Task<int[], Integer> addAsyncTask = Task.create(new ContextAction<int[], Integer>() {
         @Override
         public void apply(final Context<int[], Integer> context) {
             int a = context.getState()[0];
@@ -73,12 +73,12 @@ public class TaskTest {
      * Don't Repeat Yourself when such action sequence must be reused.
      * @return
      */
-    public Task<Integer> testAsync(int value) {
+    public Task<Unit, Integer> testAsync(int value) {
         return testAsyncTask.withInitState(value);
     }
 
     // This task is also stateless, so we can build the task once and always reuse it.
-    private static final Task<Integer> testAsyncTask = Task.create(new Func1<Integer, Integer>() {
+    private static final Task<Integer, Integer> testAsyncTask = Task.create(new Func1<Integer, Integer>() {
         // Create a task from a normal function.
         @Override
         public Integer apply(Integer value) {
@@ -96,9 +96,9 @@ public class TaskTest {
                 }
             });
         }
-    }).continueWith(new Func1<Integer, ITask<Integer>>() {
+    }).continueWith(new Func1<Integer, ITask<Unit, Integer>>() {
         @Override
-        public ITask<Integer> apply(Integer value) {
+        public ITask<Unit, Integer> apply(Integer value) {
             // A multi-branch dispatch.
             if (value == 1) {
                 // Run an async function to produce a nested task: ITask<ITask<Integer>>.

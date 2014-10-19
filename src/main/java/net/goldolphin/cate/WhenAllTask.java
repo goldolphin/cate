@@ -8,10 +8,10 @@ import java.util.List;
  * @author goldolphin
  *         2014-09-06 18:27
  */
-public class WhenAllTask extends CollectTask<List<Object>> {
+public class WhenAllTask<TInput> extends CollectTask<TInput, List<Object>> {
     private final IContinuation[] conts;
 
-    public WhenAllTask(ITask<?> ... tasks) {
+    public WhenAllTask(ITask<TInput, ?> ... tasks) {
         super(tasks);
         conts = new IContinuation[tasks.length];
         for (int i = 0; i < tasks.length; i ++) {
@@ -21,7 +21,7 @@ public class WhenAllTask extends CollectTask<List<Object>> {
 
     @Override
     public IContinuation buildContinuation(IContinuation cont) {
-        return new TaskContinuation(cont, this);
+        return new TaskContinuation<TInput>(cont, this);
     }
 
     @Override

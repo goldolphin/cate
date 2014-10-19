@@ -3,11 +3,13 @@ package net.goldolphin.cate;
 /**
  * Abstract base class that simplify usage of tasks.<p />
  * For a general view of a task, please refer to {@link net.goldolphin.cate.ITask}
+ *
+ * @param <TInput> the input type.
  * @param <TResult> result type.
  * @author goldolphin
  *         2014-09-06 15:12
  */
-public abstract class Task<TResult> implements ITask<TResult> {
+public abstract class Task<TInput, TResult> implements ITask<TInput, TResult> {
     /**
      * Execute the task with <tt>null</tt> as init state.
      * @param scheduler
@@ -31,8 +33,8 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param <SResult>
      * @return
      */
-    public <SResult> Task<SResult> continueWith(ITask<SResult> task) {
-        return new SeqTask<TResult, SResult>(this, task);
+    public <SResult> Task<TInput, SResult> continueWith(ITask<TResult, SResult> task) {
+        return new SeqTask<TInput, TResult, SResult>(this, task);
     }
 
     /**
@@ -40,8 +42,8 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param <NResult>
      * @return
      */
-    public <NResult> Task<NResult> flatten() {
-        return new FlattenTask<NResult, ITask<NResult>>((ITask<ITask<NResult>>) this);
+    public <NResult> Task<TInput, NResult> flatten() {
+        return new FlattenTask<TInput, NResult, ITask<Unit, NResult>>((ITask<TInput, ITask<Unit, NResult>>) this);
     }
 
     /**
@@ -49,7 +51,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param action
      * @return
      */
-    public Task<Unit> continueWith(Action1<TResult> action) {
+    public Task<TInput, Unit> continueWith(Action1<TResult> action) {
         return continueWith(create(action));
     }
 
@@ -59,7 +61,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param <SResult>
      * @return
      */
-    public <SResult> Task<SResult> continueWith(Func1<TResult, SResult> func) {
+    public <SResult> Task<TInput, SResult> continueWith(Func1<TResult, SResult> func) {
         return continueWith(create(func));
     }
 
@@ -70,7 +72,7 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param <SResult>
      * @return
      */
-    public <SResult> Task<SResult> continueWith(ContextAction<TResult, SResult> action) {
+    public <SResult> Task<TInput, SResult> continueWith(ContextAction<TResult, SResult> action) {
         return continueWith(create(action));
     }
 
@@ -79,28 +81,17 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * Beware, a waiter contains mutable status.
      * @return
      */
-    public Waiter<TResult> continueWithWaiter() {
-        return new Waiter<TResult>(this);
+    public Waiter<TInput, TResult> continueWithWaiter() {
+        return new Waiter<TInput, TResult>(this);
     }
 
     /**
      * Wrap this task with specified init state.
      * @param initState
-     * @param <T>
      * @return
      */
-    public <T> Task<TResult> withInitState(T initState) {
-        return new TaskWithInitState<T, TResult>(this, initState);
-    }
-
-    /**
-     * Wrap this task with specified init state.
-     * @param initState
-     * @param <T>
-     * @return
-     */
-    public <T> Task<TResult> withInitState(T ... initState) {
-        return new TaskWithInitState<T[], TResult>(this, initState);
+    public Task<Unit, TResult> withInitState(TInput initState) {
+        return new TaskWithInitState<TInput, TResult>(this, initState);
     }
 
     /**
@@ -108,8 +99,8 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param scheduler
      * @return
      */
-    public Task<TResult> withScheduler(IScheduler scheduler) {
-        return new TaskWithScheduler<TResult>(this, scheduler);
+    public Task<TInput, TResult> withScheduler(IScheduler scheduler) {
+        return new TaskWithScheduler<TInput, TResult>(this, scheduler);
     }
 
     /**
@@ -118,19 +109,19 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param <TResult>
      * @return
      */
-    public static <TResult> Task<TResult> create(Func0<TResult> func) {
+    public static <TResult> Task<Unit, TResult> create(Func0<TResult> func) {
         return new Func0Task<TResult>(func);
     }
 
     /**
      * Create a task from a function.
      * @param func
-     * @param <T>
+     * @param <TInput>
      * @param <TResult>
      * @return
      */
-    public static <T, TResult> Task<TResult> create(Func1<T, TResult> func) {
-        return new Func1Task<T, TResult>(func);
+    public static <TInput, TResult> Task<TInput, TResult> create(Func1<TInput, TResult> func) {
+        return new Func1Task<TInput, TResult>(func);
     }
 
     /**
@@ -138,55 +129,61 @@ public abstract class Task<TResult> implements ITask<TResult> {
      * @param action
      * @return
      */
-    public static Task<Unit> create(Action0 action) {
+    public static Task<Unit, Unit> create(Action0 action) {
         return new Action0Task(action);
     }
 
     /**
      * Create a task from a action.
      * @param action
-     * @param <T>
+     * @param <TInput>
      * @return
      */
-    public static <T> Task<Unit> create(Action1<T> action) {
-        return new Action1Task<T>(action);
+    public static <TInput> Task<TInput, Unit> create(Action1<TInput> action) {
+        return new Action1Task<TInput>(action);
     }
 
     /**
      * Create a task from an {@link ContextAction}.
      * {@link Context#resume} must be invoked to resume the control flow.
      * @param action
+     * @param <TInput>
      * @param <TResult>
      * @return
      */
-    public static <T, TResult> Task<TResult> create(ContextAction<T, TResult> action) {
-        return new ContextTask<T, TResult>(action);
+    public static <TInput, TResult> Task<TInput, TResult> create(ContextAction<TInput, TResult> action) {
+        return new ContextTask<TInput, TResult>(action);
     }
 
     /**
      * Create a task which will complete depending on results of specified tasks.
+     * @param action
      * @param tasks
+     * @param <TInput>
+     * @param <TResult>
      * @return
      */
-    public static <TResult> CollectTask<TResult> when(ContextAction<Object, TResult> action, ITask<?>... tasks) {
-        return new ContextCollectTask<TResult>(action, tasks);
+    public static <TInput, TResult> CollectTask<TInput, TResult> when(ContextAction<Object, TResult> action, ITask<TInput, ?>... tasks) {
+        return new ContextCollectTask<TInput, TResult>(action, tasks);
     }
 
     /**
      * Create a task which will complete when all specified tasks complete.<br />
      * @param tasks
+     * @param <TInput>
      * @return
      */
-    public static WhenAllTask whenAll(ITask<?>... tasks) {
-        return new WhenAllTask(tasks);
+    public static <TInput> WhenAllTask<TInput> whenAll(ITask<TInput, ?>... tasks) {
+        return new WhenAllTask<TInput>(tasks);
     }
 
     /**
      * Create a task which will complete when any specified task complete.
      * @param tasks
+     * @param <TInput>
      * @return
      */
-    public static WhenAnyTask whenAny(ITask<?>... tasks) {
-        return new WhenAnyTask(tasks);
+    public static <TInput> WhenAnyTask<TInput> whenAny(ITask<TInput, ?>... tasks) {
+        return new WhenAnyTask<TInput>(tasks);
     }
 }

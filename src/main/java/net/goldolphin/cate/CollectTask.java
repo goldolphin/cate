@@ -5,10 +5,10 @@ package net.goldolphin.cate;
  * @author goldolphin
  *         2014-09-13 15:43
  */
-public abstract class CollectTask<TResult> extends Task<TResult> {
-    protected final ITask<?>[] tasks;
+public abstract class CollectTask<TInput, TResult> extends Task<TInput, TResult> {
+    protected final ITask<TInput, ?>[] tasks;
 
-    public CollectTask(ITask<?>[] tasks) {
+    public CollectTask(ITask<TInput, ?>[] tasks) {
         this.tasks = tasks;
     }
 
@@ -17,7 +17,7 @@ public abstract class CollectTask<TResult> extends Task<TResult> {
      *
      * @return
      */
-    public ITask<?>[] getTasks() {
+    public ITask<TInput, ?>[] getTasks() {
         return tasks;
     }
 }

@@ -30,13 +30,13 @@ public abstract class Timer {
      * @param result
      * @param delay
      * @param unit
-     * @param <T>
+     * @param <TResult> the result type.
      * @return
      */
-    public <T> Task<T> delay(final T result, final long delay, final TimeUnit unit) {
-        return Task.create(new ContextAction<Object, T>() {
+    public <TResult> Task<?, TResult> delay(final TResult result, final long delay, final TimeUnit unit) {
+        return Task.create(new ContextAction<Object, TResult>() {
             @Override
-            public void apply(final Context<Object, T> context) {
+            public void apply(final Context<Object, TResult> context) {
                 resumeAfter(context, result, delay, unit);
             }
         });
@@ -47,15 +47,16 @@ public abstract class Timer {
      * @param task
      * @param timeout
      * @param unit
-     * @param <T>
+     * @param <TInput> the input type.
+     * @param <TResult> the result type.
      * @return A task which will yield {@link Maybe#nothing()} when wrapped task is completed not in time, otherwise the result.
      */
-    public <T> Task<Maybe<T>> withTimeout(ITask<T> task, long timeout, TimeUnit unit) {
+    public <TInput, TResult> Task<TInput, Maybe<TResult>> withTimeout(ITask<TInput, TResult> task, long timeout, TimeUnit unit) {
         final Object timeoutFlag = new Object();
-        return Task.whenAny(task, delay(timeoutFlag, timeout, unit)).continueWith(new Func1<Object, Maybe<T>>() {
+        return Task.whenAny(task, (Task<TInput, Object>)delay(timeoutFlag, timeout, unit)).continueWith(new Func1<Object, Maybe<TResult>>() {
             @Override
-            public Maybe<T> apply(Object value) {
-                return value == timeoutFlag ? Maybe.<T>nothing() : Maybe.just((T)value);
+            public Maybe<TResult> apply(Object value) {
+                return value == timeoutFlag ? Maybe.<TResult>nothing() : Maybe.just((TResult)value);
             }
         });
     }

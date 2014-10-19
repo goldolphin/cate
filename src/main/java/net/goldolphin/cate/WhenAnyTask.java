@@ -5,10 +5,10 @@ package net.goldolphin.cate;
  * @author goldolphin
  *         2014-09-06 21:27
  */
-public class WhenAnyTask extends CollectTask<Object> {
+public class WhenAnyTask<TInput> extends CollectTask<TInput, Object> {
     private final IContinuation[] conts;
 
-    public WhenAnyTask(ITask<?> ... tasks) {
+    public WhenAnyTask(ITask<TInput, ?> ... tasks) {
         super(tasks);
         conts = new IContinuation[tasks.length];
         for (int i = 0; i < tasks.length; i ++) {
@@ -18,7 +18,7 @@ public class WhenAnyTask extends CollectTask<Object> {
 
     @Override
     public IContinuation buildContinuation(IContinuation cont) {
-        return new TaskContinuation(cont, this);
+        return new TaskContinuation<TInput>(cont, this);
     }
 
     @Override

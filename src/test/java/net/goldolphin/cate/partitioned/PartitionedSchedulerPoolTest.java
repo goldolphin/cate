@@ -22,7 +22,7 @@ public class PartitionedSchedulerPoolTest {
         PartitionedSchedulerPool<Integer> schedulerPool
                 = new PartitionedSchedulerPool<Integer>(schedulers, HashedPartitioner.<Integer>instance());
         final PartitionedStore<Integer, IScheduler> store = new PartitionedStore<Integer, IScheduler>(schedulerPool);
-        Task<Boolean> task = Task.create(new ContextAction<Integer, Boolean>() {
+        Task<Integer, Boolean> task = Task.create(new ContextAction<Integer, Boolean>() {
             @Override
             public void apply(Context<Integer, Boolean> context) {
                 Integer key = context.getState();
@@ -38,13 +38,13 @@ public class PartitionedSchedulerPoolTest {
         });
 
         for (int i = 0; i < 100; i ++) {
-            Waiter<Boolean> waiter = task.continueWithWaiter();
+            Waiter<Integer, Boolean> waiter = task.continueWithWaiter();
             waiter.execute(i, schedulerPool.getScheduler(i));
             Assert.assertTrue(waiter.getResult());
         }
 
         for (int i = 0; i < 10; i ++) {
-            Waiter<Boolean> waiter = task.continueWithWaiter();
+            Waiter<Integer, Boolean> waiter = task.continueWithWaiter();
             waiter.execute(i, schedulerPool.getScheduler(i));
             Assert.assertTrue(waiter.getResult());
         }

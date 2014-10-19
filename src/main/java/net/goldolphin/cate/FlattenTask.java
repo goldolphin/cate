@@ -4,10 +4,10 @@ package net.goldolphin.cate;
  * @author goldolphin
  *         2014-09-08 12:03
  */
-public class FlattenTask<TResult, TTask extends ITask<TResult>> extends Task<TResult> {
-    private final ITask<TTask> task;
+public class FlattenTask<TInput, TResult, TTask extends ITask<Unit, TResult>> extends Task<TInput, TResult> {
+    private final ITask<TInput, TTask> task;
 
-    public FlattenTask(ITask<TTask> task) {
+    public FlattenTask(ITask<TInput, TTask> task) {
         this.task = task;
     }
 
@@ -17,7 +17,7 @@ public class FlattenTask<TResult, TTask extends ITask<TResult>> extends Task<TRe
     }
 
     @Override
-    public void onExecute(Object state, IContinuation cont, IScheduler scheduler) {
+    public void onExecute(TInput state, IContinuation cont, IScheduler scheduler) {
         throw new UnsupportedOperationException();
     }
 
@@ -30,7 +30,7 @@ public class FlattenTask<TResult, TTask extends ITask<TResult>> extends Task<TRe
 
         @Override
         public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
-            ((ITask<?>) state).buildContinuation(next).apply(null, subCont, scheduler);
+            ((ITask<Unit, ?>) state).buildContinuation(next).apply(Unit.VALUE, subCont, scheduler);
         }
     }
 }

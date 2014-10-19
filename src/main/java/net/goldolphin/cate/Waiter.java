@@ -6,13 +6,13 @@ package net.goldolphin.cate;
  * @author goldolphin
  *         2014-09-06 18:05
  */
-public class Waiter<TResult> extends Task<TResult> {
-    private final ITask<TResult> task;
+public class Waiter<TInput, TResult> extends Task<TInput, TResult> {
+    private final ITask<TInput, TResult> task;
     private final Object lock = new Object();
     private volatile boolean isComplete = false;
     private volatile TResult result;
 
-    public Waiter(ITask<TResult> task) {
+    public Waiter(ITask<TInput, TResult> task) {
         this.task = task;
     }
 
@@ -58,11 +58,11 @@ public class Waiter<TResult> extends Task<TResult> {
 
     @Override
     public IContinuation buildContinuation(IContinuation cont) {
-        return task.buildContinuation(new TaskContinuation(cont, this));
+        return task.buildContinuation(new TaskContinuation<TInput>(cont, this));
     }
 
     @Override
-    public void onExecute(Object state, IContinuation cont, IScheduler scheduler)  {
+    public void onExecute(TInput state, IContinuation cont, IScheduler scheduler)  {
         setResult((TResult) state);
         cont.apply(state, IContinuation.END_CONTINUATION, scheduler);
     }

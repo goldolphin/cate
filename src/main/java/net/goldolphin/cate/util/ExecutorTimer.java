@@ -26,6 +26,5 @@ public class ExecutorTimer extends Timer {
                 context.resume(result);
             }
         }, delay, unit);
-
     }
 }

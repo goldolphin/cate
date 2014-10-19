@@ -51,12 +51,12 @@ public class WrapRemoteClientTest {
 
         // Run
         try {
-            Waiter<Maybe<Boolean>>[] waiters = (Waiter<Maybe<Boolean>>[]) new Waiter<?>[10];
+            Waiter<Unit, Maybe<Boolean>>[] waiters = (Waiter<Unit, Maybe<Boolean>>[]) new Waiter<?, ?>[10];
             Random random = new Random();
             // Test when results come back in time.
             for (int i = 0; i < waiters.length; i++) {
                 String key = Long.toHexString(random.nextLong());
-                Waiter<Maybe<Boolean>> waiter = client.call(key, i, 100, TimeUnit.MILLISECONDS)
+                Waiter<Unit, Maybe<Boolean>> waiter = client.call(key, i, 100, TimeUnit.MILLISECONDS)
                         .continueWith(new Func1<Maybe<Boolean>, Maybe<Boolean>>() {
                             // Revert the result.
                             @Override
@@ -76,7 +76,7 @@ public class WrapRemoteClientTest {
             // Test when results don't come back in time.
             for (int i = 0; i < waiters.length; i++) {
                 String key = Long.toHexString(random.nextLong());
-                Waiter<Maybe<Boolean>> waiter = client.call(key, i, 5, TimeUnit.MILLISECONDS).continueWithWaiter();
+                Waiter<Unit, Maybe<Boolean>> waiter = client.call(key, i, 5, TimeUnit.MILLISECONDS).continueWithWaiter();
                 waiter.execute(schedulerPool.getScheduler(key));
                 waiters[i] = waiter;
                 Thread.sleep(10);
@@ -218,7 +218,7 @@ public class WrapRemoteClientTest {
             });
         }
 
-        private Task<V2> call0(final K key, final V1 input) {
+        private Task<Unit, V2> call0(final K key, final V1 input) {
             return Task.create(new ContextAction<Unit, V2>() {
                 @Override
                 public void apply(Context<Unit, V2> context) {
@@ -238,7 +238,7 @@ public class WrapRemoteClientTest {
          * @param unit
          * @return
          */
-        public Task<Maybe<V2>> call(final K key, V1 input, long timeout, TimeUnit unit) {
+        public Task<Unit, Maybe<V2>> call(final K key, V1 input, long timeout, TimeUnit unit) {
             return timer.withTimeout(call0(key, input), timeout, unit)
                     .continueWith(new Func1<Maybe<V2>, Maybe<V2>>() {
                         @Override

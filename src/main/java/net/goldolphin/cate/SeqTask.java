@@ -4,11 +4,11 @@ package net.goldolphin.cate;
  * @author goldolphin
  *         2014-09-06 15:38
  */
-public class SeqTask<AResult, TResult> extends Task<TResult> {
-    protected final ITask<AResult> antecedent;
-    protected final ITask<TResult> subsequent;
+public class SeqTask<AInput, AResult, TResult> extends Task<AInput, TResult> {
+    protected final ITask<AInput, AResult> antecedent;
+    protected final ITask<AResult, TResult> subsequent;
 
-    public SeqTask(ITask<AResult> antecedent, ITask<TResult> subsequent) {
+    public SeqTask(ITask<AInput, AResult> antecedent, ITask<AResult, TResult> subsequent) {
         this.antecedent = antecedent;
         this.subsequent = subsequent;
     }
@@ -19,7 +19,7 @@ public class SeqTask<AResult, TResult> extends Task<TResult> {
     }
 
     @Override
-    public void onExecute(Object state, IContinuation cont, IScheduler scheduler) {
+    public void onExecute(AInput state, IContinuation cont, IScheduler scheduler) {
         throw new UnsupportedOperationException();
     }
 }

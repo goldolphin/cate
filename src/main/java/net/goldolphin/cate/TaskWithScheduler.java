@@ -5,12 +5,12 @@ package net.goldolphin.cate;
  * @author goldolphin
  *         2014-09-26 21:48
  */
-public class TaskWithScheduler<TResult> extends Task<TResult> {
-    private final ITask<TResult> task;
+public class TaskWithScheduler<TInput, TResult> extends Task<TInput, TResult> {
+    private final ITask<TInput, TResult> task;
     private final IContinuation cont;
     private final IScheduler scheduler;
 
-    public TaskWithScheduler(ITask<TResult> task, IScheduler scheduler) {
+    public TaskWithScheduler(ITask<TInput, TResult> task, IScheduler scheduler) {
         this.task = task;
         cont = task.buildContinuation(IContinuation.END_CONTINUATION);
         this.scheduler = scheduler;
@@ -18,7 +18,7 @@ public class TaskWithScheduler<TResult> extends Task<TResult> {
 
     @Override
     public IContinuation buildContinuation(IContinuation cont) {
-        return new TaskContinuation(cont, this);
+        return new TaskContinuation<TInput>(cont, this);
     }
 
     @Override
