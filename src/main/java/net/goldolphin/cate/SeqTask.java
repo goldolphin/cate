@@ -17,9 +17,4 @@ public class SeqTask<AInput, AResult, TResult> extends Task<AInput, TResult> {
     public IContinuation buildContinuation(IContinuation cont) {
         return antecedent.buildContinuation(subsequent.buildContinuation(cont));
     }
-
-    @Override
-    public void onExecute(AInput state, IContinuation cont, IScheduler scheduler) {
-        throw new UnsupportedOperationException();
-    }
 }

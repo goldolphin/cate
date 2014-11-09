@@ -19,12 +19,4 @@ public interface ITask<TInput, TResult> {
      * @return the continuation of this task.
      */
     public IContinuation buildContinuation(IContinuation cont);
-
-    /**
-     * Action should be taken when the task is executed. Continuation should be applied usually.
-     * @param state input state.
-     * @param cont the continuation
-     * @param scheduler the scheduler.
-     */
-    public void onExecute(TInput state, IContinuation cont, IScheduler scheduler);
 }

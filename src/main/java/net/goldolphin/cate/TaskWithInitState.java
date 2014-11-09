@@ -15,11 +15,12 @@ public class TaskWithInitState<T, TResult> extends Task<Unit, TResult> {
 
     @Override
     public IContinuation buildContinuation(IContinuation cont) {
-        return new TaskContinuation<Unit>(task.buildContinuation(cont), this);
-    }
-
-    @Override
-    public void onExecute(Unit state, IContinuation cont, IScheduler scheduler) {
-        cont.apply(initState, IContinuation.END_CONTINUATION, scheduler);
+        final IContinuation newCont = task.buildContinuation(cont);
+        return new IContinuation() {
+            @Override
+            public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
+                newCont.apply(initState, subCont, scheduler);
+            }
+        };
     }
 }

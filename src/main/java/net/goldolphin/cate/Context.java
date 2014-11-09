@@ -8,17 +8,20 @@ package net.goldolphin.cate;
 public class Context<TInput, TResult> {
     private final TInput state;
     private final IContinuation cont;
+    private final IContinuation subCont;
     private final IScheduler scheduler;
 
     /**
      * Constructor.
      * @param state
      * @param cont
+     * @param subCont
      * @param scheduler
      */
-    Context(TInput state, IContinuation cont, IScheduler scheduler) {
+    Context(TInput state, IContinuation cont, IContinuation subCont, IScheduler scheduler) {
         this.state = state;
         this.cont = cont;
+        this.subCont = subCont;
         this.scheduler = scheduler;
     }
 
@@ -43,7 +46,7 @@ public class Context<TInput, TResult> {
      * @param newState
      */
     public void resume(TResult newState) {
-        scheduler.schedule(newState, cont, IContinuation.END_CONTINUATION);
+        scheduler.schedule(newState, cont, subCont);
     };
 
     /**
@@ -51,6 +54,6 @@ public class Context<TInput, TResult> {
      * @param newState
      */
     public void resumeSynchronously(TResult newState) {
-        cont.apply(newState, IContinuation.END_CONTINUATION, scheduler);
+        cont.apply(newState, subCont, scheduler);
     }
 }

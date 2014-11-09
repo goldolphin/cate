@@ -20,16 +20,16 @@ public class WhenAllTask<TInput> extends CollectTask<TInput, List<Object>> {
     }
 
     @Override
-    public IContinuation buildContinuation(IContinuation cont) {
-        return new TaskContinuation<TInput>(cont, this);
-    }
-
-    @Override
-    public void onExecute(Object state, IContinuation cont, IScheduler scheduler) {
-        IContinuation collectCont = new Continuation(cont);
-        for (IContinuation c: conts) {
-            c.apply(state, collectCont, scheduler);
-        }
+    public IContinuation buildContinuation(final IContinuation cont) {
+        return new IContinuation() {
+            @Override
+            public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
+                IContinuation collectCont = new Continuation(SeqContinuation.seq(cont, subCont));
+                for (IContinuation c: conts) {
+                    c.apply(state, collectCont, scheduler);
+                }
+            }
+        };
     }
 
     public class Continuation implements IContinuation {

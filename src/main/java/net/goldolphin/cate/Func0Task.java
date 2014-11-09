@@ -12,12 +12,12 @@ public class Func0Task<TResult> extends Task<Unit, TResult> {
     }
 
     @Override
-    public IContinuation buildContinuation(IContinuation cont) {
-        return new TaskContinuation<Unit>(cont, this);
-    }
-
-    @Override
-    public void onExecute(Unit state, IContinuation cont, IScheduler scheduler) {
-        cont.apply(func.apply(), IContinuation.END_CONTINUATION, scheduler);
+    public IContinuation buildContinuation(final IContinuation cont) {
+        return new IContinuation() {
+            @Override
+            public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
+                cont.apply(func.apply(), subCont, scheduler);
+            }
+        };
     }
 }

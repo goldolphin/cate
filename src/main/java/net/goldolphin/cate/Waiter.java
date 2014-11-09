@@ -57,13 +57,13 @@ public class Waiter<TInput, TResult> extends Task<TInput, TResult> {
     }
 
     @Override
-    public IContinuation buildContinuation(IContinuation cont) {
-        return task.buildContinuation(new TaskContinuation<TInput>(cont, this));
-    }
-
-    @Override
-    public void onExecute(TInput state, IContinuation cont, IScheduler scheduler)  {
-        setResult((TResult) state);
-        cont.apply(state, IContinuation.END_CONTINUATION, scheduler);
+    public IContinuation buildContinuation(final IContinuation cont) {
+        return task.buildContinuation(new IContinuation() {
+            @Override
+            public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
+                setResult((TResult) state);
+                cont.apply(state, subCont, scheduler);
+            }
+        });
     }
 }

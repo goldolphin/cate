@@ -16,11 +16,6 @@ public class FlattenTask<TInput, TResult, TTask extends ITask<Unit, TResult>> ex
         return task.buildContinuation(new Continuation(cont));
     }
 
-    @Override
-    public void onExecute(TInput state, IContinuation cont, IScheduler scheduler) {
-        throw new UnsupportedOperationException();
-    }
-
     public static class Continuation implements IContinuation {
         private final IContinuation next;
 

@@ -14,19 +14,19 @@ public class ContextCollectTask<TInput, TResult> extends CollectTask<TInput, TRe
     }
 
     @Override
-    public IContinuation buildContinuation(IContinuation cont) {
+    public IContinuation buildContinuation(final IContinuation cont) {
         IContinuation[] conts = new IContinuation[tasks.length];
-        IContinuation collectorCont = new TaskContinuation<TInput>(cont, this);
+        IContinuation collectorCont = new IContinuation() {
+            @Override
+            public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
+                Context<Object, TResult> context = new Context<Object, TResult>(state, cont, subCont, scheduler);
+                action.apply(context);
+            }
+        };
         for (int i = 0; i < tasks.length; i ++) {
             conts[i] = tasks[i].buildContinuation(collectorCont);
         }
         return new DispatcherContinuation(conts);
-    }
-
-    @Override
-    public void onExecute(Object state, IContinuation cont, IScheduler scheduler) {
-        Context<Object, TResult> context = new Context<Object, TResult>(state, cont, scheduler);
-        action.apply(context);
     }
 
     public static class DispatcherContinuation implements IContinuation {

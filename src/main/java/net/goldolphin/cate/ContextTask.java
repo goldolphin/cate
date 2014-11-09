@@ -12,13 +12,13 @@ public class ContextTask<TInput, TResult> extends Task<TInput, TResult> {
     }
 
     @Override
-    public IContinuation buildContinuation(IContinuation cont) {
-        return new TaskContinuation<TInput>(cont, this);
-    }
-
-    @Override
-    public void onExecute(TInput state, final IContinuation cont, final IScheduler scheduler) {
-        Context<TInput, TResult> context = new Context<TInput, TResult>(state, cont, scheduler);
-        action.apply(context);
+    public IContinuation buildContinuation(final IContinuation cont) {
+        return new IContinuation() {
+            @Override
+            public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
+                Context<TInput, TResult> context = new Context<TInput, TResult>((TInput) state, cont, subCont, scheduler);
+                action.apply(context);
+            }
+        };
     }
 }
