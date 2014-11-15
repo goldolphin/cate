@@ -6,9 +6,9 @@ package net.goldolphin.cate;
  *         2014-09-13 15:43
  */
 public class ContextCollectTask<TInput, TResult> extends CollectTask<TInput, TResult> {
-    private final ContextAction<Object, TResult> action;
+    private final ContextAction<Result, TResult> action;
 
-    public ContextCollectTask(ContextAction<Object, TResult> action, ITask<TInput, ?> ... tasks) {
+    public ContextCollectTask(ContextAction<Result, TResult> action, ITask<TInput, ?> ... tasks) {
         super(tasks);
         this.action = action;
     }
@@ -19,12 +19,12 @@ public class ContextCollectTask<TInput, TResult> extends CollectTask<TInput, TRe
         IContinuation collectorCont = new IContinuation() {
             @Override
             public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
-                Context<Object, TResult> context = new Context<Object, TResult>(state, cont, subCont, scheduler);
+                Context<Result, TResult> context = new Context<Result, TResult>((Result) state, cont, subCont, scheduler);
                 action.apply(context);
             }
         };
         for (int i = 0; i < tasks.length; i ++) {
-            conts[i] = tasks[i].buildContinuation(collectorCont);
+            conts[i] = tasks[i].buildContinuation(new IndexContinuation(i, collectorCont));
         }
         return new DispatcherContinuation(conts);
     }

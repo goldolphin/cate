@@ -3,7 +3,6 @@ package net.goldolphin.cate;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.List;
 import java.util.concurrent.Executors;
 
 public class TaskTest {
@@ -122,11 +121,11 @@ public class TaskTest {
                               return value * 3;
                           }
                       }))
-      ).continueWith(new Func1<List<Object>, Integer>() {
+      ).continueWith(new Func1<Object[], Integer>() {
                 // Collect results of the 2 task2
                 @Override
-                public Integer apply(List<Object> value) {
-                    return (Integer) value.get(0) + (Integer) value.get(1);
+                public Integer apply(Object[] value) {
+                    return (Integer) value[0] + (Integer) value[1];
                 }
             }).continueWith(new Func1<Integer, Integer>() {
                 @Override

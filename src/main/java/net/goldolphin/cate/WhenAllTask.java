@@ -1,21 +1,18 @@
 package net.goldolphin.cate;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * A task which will complete when all specified tasks complete.
  * @author goldolphin
  *         2014-09-06 18:27
  */
-public class WhenAllTask<TInput> extends CollectTask<TInput, List<Object>> {
+public class WhenAllTask<TInput> extends CollectTask<TInput, Object[]> {
     private final IContinuation[] conts;
 
     public WhenAllTask(ITask<TInput, ?> ... tasks) {
         super(tasks);
         conts = new IContinuation[tasks.length];
         for (int i = 0; i < tasks.length; i ++) {
-            conts[i] = tasks[i].buildContinuation(IContinuation.END_CONTINUATION);
+            conts[i] = tasks[i].buildContinuation(new IndexContinuation(i, IContinuation.END_CONTINUATION));
         }
     }
 
@@ -34,12 +31,12 @@ public class WhenAllTask<TInput> extends CollectTask<TInput, List<Object>> {
 
     public class Continuation implements IContinuation {
         private final IContinuation next;
-        private final List<Object> results;
+        private final Object[] results;
         private int complete = 0;
 
         public Continuation(IContinuation next) {
             this.next = next;
-            results = new ArrayList<Object>(getTasks().length);
+            results = new Object[getTasks().length];
         }
 
         @Override
@@ -49,7 +46,8 @@ public class WhenAllTask<TInput> extends CollectTask<TInput, List<Object>> {
             if (complete > total) {
                 throw new IllegalStateException("Invalid complete value: " + complete + " exceeds " + total);
             }
-            results.add(state);
+            Result result = (Result) state;
+            results[result.index] = result.value;
             if (complete == total) {
                 next.apply(results, subCont, scheduler);
             }

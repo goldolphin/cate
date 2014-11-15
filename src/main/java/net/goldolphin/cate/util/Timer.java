@@ -1,5 +1,7 @@
 package net.goldolphin.cate.util;
 
+import net.goldolphin.cate.Action1;
+import net.goldolphin.cate.CollectTask;
 import net.goldolphin.cate.Context;
 import net.goldolphin.cate.ContextAction;
 import net.goldolphin.cate.Func1;
@@ -27,17 +29,15 @@ public abstract class Timer {
 
     /**
      * Create a task, which will yield the specified result after the given delay.
-     * @param result
      * @param delay
      * @param unit
-     * @param <TResult> the result type.
      * @return
      */
-    public <TResult> Task<?, TResult> delay(final TResult result, final long delay, final TimeUnit unit) {
-        return Task.create(new ContextAction<Object, TResult>() {
+    public Task<?, ?> delay(final long delay, final TimeUnit unit) {
+        return Task.create(new ContextAction<Object, Object>() {
             @Override
-            public void apply(final Context<Object, TResult> context) {
-                resumeAfter(context, result, delay, unit);
+            public void apply(final Context<Object, Object> context) {
+                resumeAfter(context, context.getState(), delay, unit);
             }
         });
     }
@@ -51,12 +51,16 @@ public abstract class Timer {
      * @param <TResult> the result type.
      * @return A task which will yield {@link Maybe#nothing()} when wrapped task is completed not in time, otherwise the result.
      */
-    public <TInput, TResult> Task<TInput, Maybe<TResult>> withTimeout(ITask<TInput, TResult> task, long timeout, TimeUnit unit) {
-        final Object timeoutFlag = new Object();
-        return Task.whenAny(task, (Task<TInput, Object>)delay(timeoutFlag, timeout, unit)).continueWith(new Func1<Object, Maybe<TResult>>() {
+    public <TInput, TResult> Task<TInput, Maybe<TResult>> withTimeout(ITask<TInput, TResult> task, final Action1<TInput> onTimeout, long timeout, TimeUnit unit) {
+        return Task.whenAny(task, ((Task<TInput, TInput>)delay(timeout, unit))).continueWith(new Func1<CollectTask.Result, Maybe<TResult>>() {
             @Override
-            public Maybe<TResult> apply(Object value) {
-                return value == timeoutFlag ? Maybe.<TResult>nothing() : Maybe.just((TResult)value);
+            public Maybe<TResult> apply(CollectTask.Result value) {
+                if (value.index == 0) {
+                    return Maybe.just((TResult)value.value);
+                } else {
+                    onTimeout.apply((TInput)value.value);
+                    return Maybe.nothing();
+                }
             }
         });
     }

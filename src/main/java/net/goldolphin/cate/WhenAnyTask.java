@@ -5,14 +5,14 @@ package net.goldolphin.cate;
  * @author goldolphin
  *         2014-09-06 21:27
  */
-public class WhenAnyTask<TInput> extends CollectTask<TInput, Object> {
+public class WhenAnyTask<TInput> extends CollectTask<TInput, CollectTask.Result> {
     private final IContinuation[] conts;
 
     public WhenAnyTask(ITask<TInput, ?> ... tasks) {
         super(tasks);
         conts = new IContinuation[tasks.length];
         for (int i = 0; i < tasks.length; i ++) {
-            conts[i] = tasks[i].buildContinuation(IContinuation.END_CONTINUATION);
+            conts[i] = tasks[i].buildContinuation(new IndexContinuation(i, IContinuation.END_CONTINUATION));
         }
     }
 

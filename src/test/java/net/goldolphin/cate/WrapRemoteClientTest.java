@@ -239,16 +239,14 @@ public class WrapRemoteClientTest {
          * @return
          */
         public Task<Unit, Maybe<V2>> call(final K key, V1 input, long timeout, TimeUnit unit) {
-            return timer.withTimeout(call0(key, input), timeout, unit)
-                    .continueWith(new Func1<Maybe<V2>, Maybe<V2>>() {
-                        @Override
-                        public Maybe<V2> apply(Maybe<V2> value) {
-                            // Cleanup.
-                            addThreadInfo(key);
-                            requestRecords.remove(key);
-                            return value;
-                        }
-                    });
+            return timer.withTimeout(call0(key, input), new Action1<Unit>() {
+                @Override
+                public void apply(Unit value) {
+                    // Cleanup.
+                    addThreadInfo(key);
+                    requestRecords.remove(key);
+                }
+            }, timeout, unit);
         }
 
         /**
