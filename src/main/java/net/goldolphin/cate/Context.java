@@ -48,12 +48,4 @@ public class Context<TInput, TResult> {
     public void resume(TResult newState) {
         scheduler.schedule(newState, cont, subCont);
     };
-
-    /**
-     * Resume the control flow with specified new state synchronously.
-     * @param newState
-     */
-    public void resumeSynchronously(TResult newState) {
-        cont.apply(newState, subCont, scheduler);
-    }
 }
