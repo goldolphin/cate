@@ -15,9 +15,9 @@ public class Action1Task<TInput> extends Task<TInput, Unit> {
     public IContinuation buildContinuation(final IContinuation cont) {
         return new IContinuation() {
             @Override
-            public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
+            public void apply(Object state, Environment environment, IScheduler scheduler) {
                 action.apply((TInput) state);
-                cont.apply(Unit.VALUE, subCont, scheduler);
+                cont.apply(Unit.VALUE, environment, scheduler);
             }
         };
     }

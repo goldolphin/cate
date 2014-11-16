@@ -15,11 +15,11 @@ public class ExecutorScheduler extends SynchronizedScheduler {
     }
 
     @Override
-    public void schedule(final Object state, final IContinuation cont, final IContinuation subCont) {
+    public void schedule(final IContinuation cont, final Object state, final Environment environment) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                ExecutorScheduler.super.schedule(state, cont, subCont);
+                ExecutorScheduler.super.schedule(cont, state, environment);
             }
         });
     }

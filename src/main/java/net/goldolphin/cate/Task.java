@@ -24,7 +24,7 @@ public abstract class Task<TInput, TResult> implements ITask<TInput, TResult> {
      * @param scheduler
      */
     public void execute(Object state, IScheduler scheduler) {
-        scheduler.schedule(state, buildContinuation(IContinuation.END_CONTINUATION), IContinuation.END_CONTINUATION);
+        scheduler.schedule(buildContinuation(IContinuation.END_CONTINUATION), state, Environment.empty());
     }
 
     /**
@@ -163,7 +163,7 @@ public abstract class Task<TInput, TResult> implements ITask<TInput, TResult> {
      * @param <TResult>
      * @return
      */
-    public static <TInput, TResult> CollectTask<TInput, TResult> when(ContextAction<Object, TResult> action, ITask<TInput, ?>... tasks) {
+    public static <TInput, TResult> CollectTask<TInput, TResult> when(ContextAction<CollectTask.Result, TResult> action, ITask<TInput, ?>... tasks) {
         return new ContextCollectTask<TInput, TResult>(action, tasks);
     }
 

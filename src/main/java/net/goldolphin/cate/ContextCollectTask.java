@@ -18,8 +18,8 @@ public class ContextCollectTask<TInput, TResult> extends CollectTask<TInput, TRe
         IContinuation[] conts = new IContinuation[tasks.length];
         IContinuation collectorCont = new IContinuation() {
             @Override
-            public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
-                Context<Result, TResult> context = new Context<Result, TResult>((Result) state, cont, subCont, scheduler);
+            public void apply(Object state, Environment environment, IScheduler scheduler) {
+                Context<Result, TResult> context = new Context<Result, TResult>((Result) state, cont, environment, scheduler);
                 action.apply(context);
             }
         };
@@ -37,9 +37,9 @@ public class ContextCollectTask<TInput, TResult> extends CollectTask<TInput, TRe
         }
 
         @Override
-        public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
+        public void apply(Object state, Environment environment, IScheduler scheduler) {
             for (IContinuation cont: next) {
-                cont.apply(state, subCont, scheduler);
+                cont.apply(state, environment, scheduler);
             }
         }
     }

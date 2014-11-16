@@ -60,9 +60,9 @@ public class Waiter<TInput, TResult> extends Task<TInput, TResult> {
     public IContinuation buildContinuation(final IContinuation cont) {
         return task.buildContinuation(new IContinuation() {
             @Override
-            public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
+            public void apply(Object state, Environment environment, IScheduler scheduler) {
                 setResult((TResult) state);
-                cont.apply(state, subCont, scheduler);
+                cont.apply(state, environment, scheduler);
             }
         });
     }

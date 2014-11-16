@@ -6,24 +6,25 @@ package net.goldolphin.cate;
  *         2014-09-06 18:27
  */
 public class WhenAllTask<TInput> extends CollectTask<TInput, Object[]> {
-    private final IContinuation[] conts;
 
     public WhenAllTask(ITask<TInput, ?> ... tasks) {
         super(tasks);
-        conts = new IContinuation[tasks.length];
-        for (int i = 0; i < tasks.length; i ++) {
-            conts[i] = tasks[i].buildContinuation(new IndexContinuation(i, IContinuation.END_CONTINUATION));
-        }
     }
 
     @Override
-    public IContinuation buildContinuation(final IContinuation cont) {
+    public IContinuation buildContinuation(IContinuation cont) {
+        IContinuation collectorCont = new Continuation(cont);
+        final IContinuation[] conts = new IContinuation[tasks.length];
+        for (int i = 0; i < tasks.length; i ++) {
+            conts[i] = tasks[i].buildContinuation(new IndexContinuation(i, collectorCont));
+        }
+
         return new IContinuation() {
             @Override
-            public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
-                IContinuation collectCont = new Continuation(SeqContinuation.seq(cont, subCont));
+            public void apply(Object state, Environment environment, IScheduler scheduler) {
+                Environment newEnv = environment.extend(new Counter(tasks.length));
                 for (IContinuation c: conts) {
-                    c.apply(state, collectCont, scheduler);
+                    c.apply(state, newEnv, scheduler);
                 }
             }
         };
@@ -31,25 +32,17 @@ public class WhenAllTask<TInput> extends CollectTask<TInput, Object[]> {
 
     public class Continuation implements IContinuation {
         private final IContinuation next;
-        private final Object[] results;
-        private int complete = 0;
 
         public Continuation(IContinuation next) {
             this.next = next;
-            results = new Object[getTasks().length];
         }
 
         @Override
-        public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
-            complete += 1;
-            int total = getTasks().length;
-            if (complete > total) {
-                throw new IllegalStateException("Invalid complete value: " + complete + " exceeds " + total);
-            }
-            Result result = (Result) state;
-            results[result.index] = result.value;
-            if (complete == total) {
-                next.apply(results, subCont, scheduler);
+        public void apply(Object state, Environment environment, IScheduler scheduler) {
+            Counter counter = (Counter) environment.getValue();
+            counter.record((Result) state);
+            if (counter.getComplete() == tasks.length) {
+                next.apply(counter.getResults(), environment.getParent(), scheduler);
             }
         }
     }

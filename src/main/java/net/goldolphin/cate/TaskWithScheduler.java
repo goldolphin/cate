@@ -6,43 +6,42 @@ package net.goldolphin.cate;
  *         2014-09-26 21:48
  */
 public class TaskWithScheduler<TInput, TResult> extends Task<TInput, TResult> {
-    private final IContinuation cont;
+    private final ITask<TInput, TResult> task;
     private final IScheduler scheduler;
 
     public TaskWithScheduler(ITask<TInput, TResult> task, IScheduler scheduler) {
-        cont = task.buildContinuation(IContinuation.END_CONTINUATION);
+        this.task = task;
         this.scheduler = scheduler;
     }
 
     @Override
-    public IContinuation buildContinuation(final IContinuation cont) {
-        return new IContinuation() {
-            @Override
-            public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
-                if (scheduler == TaskWithScheduler.this.scheduler) {
-                    TaskWithScheduler.this.cont.apply(state, SeqContinuation.seq(cont, subCont), scheduler);
-                } else {
-                    TaskWithScheduler.this.scheduler.schedule(
-                            state,
-                            TaskWithScheduler.this.cont,
-                            new Continuation(SeqContinuation.seq(cont, subCont), scheduler));
-                }
-            }
-        };
+    public IContinuation buildContinuation(IContinuation cont) {
+        return new Continuation(cont);
     }
 
-    public static class Continuation implements IContinuation {
-        private final IContinuation next;
-        private final IScheduler scheduler;
+    private static void apply(IContinuation cont, Object state, Environment environment, IScheduler scheduler, IScheduler newScheduler) {
+        if (scheduler == newScheduler) {
+            cont.apply(state, environment, scheduler);
+        } else {
+            newScheduler.schedule(cont, state, environment);
+        }
+    }
 
-        public Continuation(IContinuation next, IScheduler scheduler) {
-            this.next = next;
-            this.scheduler = scheduler;
+    public class Continuation implements IContinuation {
+        private final IContinuation next;
+
+        public Continuation(final IContinuation cont) {
+            this.next = task.buildContinuation(new IContinuation() {
+                @Override
+                public void apply(Object state, Environment environment, IScheduler scheduler) {
+                    TaskWithScheduler.apply(cont, state, environment.getParent(), scheduler, (IScheduler) environment.getValue());
+                }
+            });
         }
 
         @Override
-        public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
-            this.scheduler.schedule(state, next, subCont);
+        public void apply(Object state, Environment environment, IScheduler scheduler) {
+            TaskWithScheduler.apply(next, state, environment.extend(scheduler), scheduler, TaskWithScheduler.this.scheduler);
         }
     }
 }

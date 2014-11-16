@@ -24,8 +24,8 @@ public class FlattenTask<TInput, TResult, TTask extends ITask<Unit, TResult>> ex
         }
 
         @Override
-        public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
-            ((ITask<Unit, ?>) state).buildContinuation(next).apply(Unit.VALUE, subCont, scheduler);
+        public void apply(Object state, Environment environment, IScheduler scheduler) {
+            ((ITask<Unit, ?>) state).buildContinuation(next).apply(Unit.VALUE, environment, scheduler);
         }
     }
 }

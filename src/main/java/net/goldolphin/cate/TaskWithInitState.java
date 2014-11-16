@@ -18,8 +18,8 @@ public class TaskWithInitState<T, TResult> extends Task<Unit, TResult> {
         final IContinuation newCont = task.buildContinuation(cont);
         return new IContinuation() {
             @Override
-            public void apply(Object state, IContinuation subCont, IScheduler scheduler) {
-                newCont.apply(initState, subCont, scheduler);
+            public void apply(Object state, Environment environment, IScheduler scheduler) {
+                newCont.apply(initState, environment, scheduler);
             }
         };
     }

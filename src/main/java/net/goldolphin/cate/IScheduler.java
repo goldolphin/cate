@@ -8,9 +8,9 @@ package net.goldolphin.cate;
 public interface IScheduler {
     /**
      * Schedule and apply a continuation with specified input state.
-     * @param state input state.
      * @param cont the continuation to be applied.
-     * @param subCont subsequent continuation, which should be applied after current one is applied.
+     * @param state input state.
+     * @param environment the environment to be passed to the continuation.
      */
-    public void schedule(Object state, IContinuation cont, IContinuation subCont);
+    public void schedule(IContinuation cont, Object state, Environment environment);
 }

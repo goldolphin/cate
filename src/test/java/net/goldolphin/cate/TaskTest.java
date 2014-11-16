@@ -136,10 +136,10 @@ public class TaskTest {
 
     public static class DebugScheduler extends SynchronizedScheduler {
         @Override
-        public void schedule(Object state, IContinuation cont, IContinuation subCont) {
+        public void schedule(IContinuation cont, Object state, Environment environment) {
             System.out.format("Run: state=%s, cont=%s, subCont=%s, scheduler=%s\n",
-                    state, cont, subCont, this);
-            super.schedule(state, cont, subCont);
+                    state, cont, environment, this);
+            super.schedule(cont, state, environment);
         }
     }
 }
