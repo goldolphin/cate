@@ -104,6 +104,15 @@ public abstract class Task<TInput, TResult> implements ITask<TInput, TResult> {
     }
 
     /**
+     * Create an identical task, which outputs exactly its input.
+     * @param <T>
+     * @return
+     */
+    public static <T> Task<T, T> identity() {
+        return IdenticalTask.identity();
+    }
+
+    /**
      * Create a task from a function.
      * @param func
      * @param <TResult>
